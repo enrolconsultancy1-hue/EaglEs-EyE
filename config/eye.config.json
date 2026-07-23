@@ -1,0 +1,13 @@
+{
+    "watch_path": "workspace",
+    "mirror_path": "../EaglEs-EyE-data/mirror",
+    "memory_path": "../EaglEs-EyE-data/memory",
+    "ignore": [
+        ".venv",
+        ".git",
+        "__pycache__",
+        "build",
+        ".dart_tool",
+        "node_modules"
+    ]
+}
