@@ -28,74 +28,27 @@ Current modules include:
 ## Roadmap
 
 - Phase 1 — Kernel ✅
-    - Core execution engine
-    - Service lifecycle management
 
 - Phase 2 — Event Bus ✅
-    - Internal event communication
-    - Event-driven architecture
 
 - Phase 3 — Core Services ✅
-    - Configuration
-    - Logging
-    - File watching
-    - Mirroring
-    - Memory storage
-    - Reflection foundation
 
 - Phase 4 — Stable Cognitive Kernel ✅
-    - Stable service architecture
-    - Persistent runtime environment
-    - Modular cognitive foundation
 
 - Phase 5 — Semantic Memory ✅
-    - Knowledge indexing
-    - File classification
-    - Semantic metadata storage
-    - Memory querying
-    - Context building
-    - Memory reindexing
 
-- Phase 6 — Vision Perception 🚧
-    - 6.1 Image observation ✅
-        - Image detection
-        - Dimension extraction
-        - Format recognition
-        - Vision event publishing
+- Phase 6 — Vision ✅
+  - 6.1 Vision Perception Service ✅
+  - 6.2 Perception Filtering & Semantic Classification ✅
+  - 6.3 Vision Memory Integration & Deduplication ✅
+  - 6.4 Unified Memory Gateway & Recall ✅
 
-    - 6.2 Semantic media classification ✅
-        - Media categorization
-        - Improved watcher filtering
-        - Knowledge classification
-
-    - 6.3 Vision Memory Integration
-        - Store visual observations in memory
-        - Connect vision events with semantic memory
-        - Enable visual knowledge retrieval
-
-- Phase 7 — Brain (SQLite)
-    - Structured long-term memory
-    - Relational knowledge storage
-    - Memory graph foundation
+- Phase 7 — Brain (SQLite) 🚧
 
 - Phase 8 — Reflection Intelligence
-    - Self-analysis
-    - Experience evaluation
-    - Cognitive improvement loops
 
 - Phase 9 — Planning
-    - Goal management
-    - Task decomposition
-    - Autonomous planning
 
 - Phase 10 — Agentic AI
-    - Tool usage
-    - Autonomous reasoning
-    - Multi-step execution
 
 - Phase 11 — AI Operating System
-    - Integrated perception
-    - Memory
-    - Reasoning
-    - Planning
-    - Autonomous action
