@@ -13,6 +13,7 @@ from services.memory_reindex_service import MemoryReindexService
 from services.context_builder_service import ContextBuilderService
 from services.vision_service import VisionService
 from services.vision_memory_service import VisionMemoryService
+from services.memory_gateway_service import MemoryGatewayService
 
 from watcher.watcher_service import WatcherService
 
@@ -44,6 +45,8 @@ vision = VisionService(kernel)
 
 vision_memory = VisionMemoryService(kernel)
 
+gateway = MemoryGatewayService(kernel)
+
 watcher = WatcherService(kernel)
 
 
@@ -71,6 +74,8 @@ kernel.register_service(vision)
 
 kernel.register_service(vision_memory)
 
+kernel.register_service(gateway)
+
 kernel.register_service(watcher)
 
 
@@ -97,6 +102,8 @@ except KeyboardInterrupt:
 
 
     watcher.stop()
+
+    gateway.stop()
 
     vision_memory.stop()
 
