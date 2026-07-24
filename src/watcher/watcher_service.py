@@ -30,7 +30,9 @@ class EyeFileHandler(FileSystemEventHandler):
         path
     ):
 
-        path = os.path.abspath(path)
+        path = os.path.abspath(
+            path
+        )
 
 
         if not self.eye_filter.allowed(path):
@@ -92,6 +94,8 @@ class EyeFileHandler(FileSystemEventHandler):
 
 
 
+
+
 class WatcherService(Service):
 
 
@@ -100,30 +104,18 @@ class WatcherService(Service):
         kernel
     ):
 
-        super().__init__(kernel)
-
-
-        config = kernel.get_config()
-
-
-        self.watch_path = config.get(
-            "watch_path",
-            "."
-        )
-
-
-        ignored = config.get(
-            "ignore",
-            []
+        super().__init__(
+            kernel
         )
 
 
         self.observer = Observer()
 
+        self.watch_path = None
 
-        self.filter = EyeFilter(
-            ignored
-        )
+        self.filter = None
+
+
 
 
 
@@ -132,10 +124,36 @@ class WatcherService(Service):
         super().start()
 
 
+
+        config = self.kernel.get_config()
+
+
+
+        self.watch_path = config.get(
+            "watch_path",
+            "."
+        )
+
+
+
+        ignored = config.get(
+            "ignore",
+            []
+        )
+
+
+
+        self.filter = EyeFilter(
+            ignored
+        )
+
+
+
         handler = EyeFileHandler(
             self.kernel.event_bus,
             self.filter
         )
+
 
 
         self.observer.schedule(
@@ -145,7 +163,9 @@ class WatcherService(Service):
         )
 
 
+
         self.observer.start()
+
 
 
         self.kernel.event_bus.publish(
@@ -154,6 +174,8 @@ class WatcherService(Service):
                 "path": self.watch_path
             }
         )
+
+
 
 
 
