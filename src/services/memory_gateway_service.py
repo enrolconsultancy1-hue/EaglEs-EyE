@@ -1,6 +1,8 @@
 import os
 import json
 
+from datetime import datetime
+
 from services.service import Service
 
 
@@ -44,7 +46,6 @@ class MemoryGatewayService(Service):
                     "knowledge.json"
                 ),
 
-
             "vision":
                 os.path.join(
                     self.memory_path,
@@ -54,9 +55,8 @@ class MemoryGatewayService(Service):
         }
 
 
-
         self.kernel.event_bus.subscribe(
-            "IMAGE_OBSERVED",
+            "VISION_OBSERVED",
             self.receive
         )
 
@@ -80,7 +80,6 @@ class MemoryGatewayService(Service):
         data
     ):
 
-
         print(
             "[MEMORY GATEWAY] Received:",
             data.get(
@@ -91,31 +90,24 @@ class MemoryGatewayService(Service):
 
 
 
-    def recall(
+    def search(
         self,
         query
     ):
 
-
         results = []
 
 
-
-        for name, path in self.sources.items():
-
+        for source, path in self.sources.items():
 
 
-            if not os.path.exists(
-                path
-            ):
+            if not os.path.exists(path):
 
                 continue
 
 
 
-
             try:
-
 
                 with open(
                     path,
@@ -123,36 +115,53 @@ class MemoryGatewayService(Service):
                     encoding="utf-8"
                 ) as f:
 
-
-                    memory = json.load(
-                        f
-                    )
+                    memories = json.load(f)
 
 
 
-
-                for item in memory:
-
+                for memory in memories:
 
 
                     text = json.dumps(
-                        item
+                        memory
                     ).lower()
+
+
+                    score = 0
 
 
 
                     if query.lower() in text:
 
+                        score += 1
+
+
+
+                    if query.lower() in str(
+                        memory.get(
+                            "filename",
+                            ""
+                        )
+                    ).lower():
+
+                        score += 2
+
+
+
+                    if score > 0:
+
 
                         results.append(
 
                             {
-                                "source":
-                                    name,
+                                "source": source,
 
-                                "memory":
-                                    item
+                                "score": score,
 
+                                "timestamp":
+                                    datetime.now().isoformat(),
+
+                                "memory": memory
                             }
 
                         )
@@ -161,10 +170,26 @@ class MemoryGatewayService(Service):
 
             except Exception:
 
-
                 pass
 
 
 
+        results.sort(
+            key=lambda x: x["score"],
+            reverse=True
+        )
+
 
         return results
+
+
+
+
+    def recall(
+        self,
+        query
+    ):
+
+        return self.search(
+            query
+        )
