@@ -1,7 +1,9 @@
 from core.event_bus import EventBus
 
 
+
 class EyeKernel:
+
 
     def __init__(self):
 
@@ -12,6 +14,7 @@ class EyeKernel:
         self.config = {}
 
 
+
     def register_service(self, service):
 
         self.services[service.name] = service
@@ -19,6 +22,15 @@ class EyeKernel:
         print(
             f"[KERNEL] Registered: {service.name}"
         )
+
+
+
+    def get_service(self, name):
+
+        return self.services.get(
+            name
+        )
+
 
 
     def set_config(self, config):
@@ -31,16 +43,24 @@ class EyeKernel:
         )
 
 
+
     def get_config(self):
 
         return self.config
 
 
+
     def start(self):
 
         print("\n===================================")
-        print("        EaglEs EyE Kernel")
-        print("===================================\n")
+
+        print(
+            "        EaglEs EyE Kernel"
+        )
+
+        print(
+            "===================================\n"
+        )
 
 
         for service in self.services.values():
@@ -48,4 +68,7 @@ class EyeKernel:
             service.start()
 
 
-        print("\nKernel Ready.\n")
+
+        print(
+            "\nKernel Ready.\n"
+        )
