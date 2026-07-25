@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 12 — EaglEs EyE Desktop GUI (v2.0.0) is complete.
+Phase 13 — Semantic Intelligence & Autonomous Awareness (v2.1.0) is complete.
 
 ---
 
@@ -36,6 +36,23 @@ Completed:
 - Strict consumer boundary: GUI never imports EyeKernel, bypasses MCP, writes to SQLite, mutates workspaces, executes commands, or stages commits.
 - Comprehensive Phase 12 test suite: 21 tests covering MCP client, server, templates, app bootstrap, and large workspace performance.
 - Version target achieved: v2.0.0.
+
+## Phase 13 — Semantic Intelligence & Autonomous Awareness (v2.1.0)
+
+Completed:
+
+- `EmbeddingService` with three provider modes: `disabled` (default), `simple` (zero-dependency hash-based), and `sentence_transformers` (production semantic search).
+- `VectorSearchService` providing cosine-similarity search across chunks, symbols, events, and decision records.
+- `SemanticAwarenessService` subscribing to EventBus events for evidence-backed pattern detection (module clustering).
+- Additive nullable `embedding BLOB` columns on `chunks`, `symbols`, `events`, `decision_records`, `reflections` tables — zero migration risk.
+- New `awareness_signals` table with TTL-based cleanup for awareness signal storage.
+- Async-safe embedding generation integrated into `KnowledgeIndexerService` (config-gated, default off).
+- 3 new MCP tools: `search_semantic`, `get_similar`, `get_awareness_signals` — all existing 11 tools preserved.
+- Two new Mission Control views: Semantic Search panel and Awareness Signal feed.
+- All nav bars updated across existing 7 views to link to the two new panels.
+- Strict boundaries preserved: no command execution, no workspace mutation, no hidden reasoning inference, no replacement of existing services.
+- Comprehensive Phase 13 test suite: 28 tests covering embedding, vector search, awareness, MCP tools, GUI templates, and regression.
+- Version target achieved: v2.1.0.
 
 ## Phase 11 — MCP Ecosystem
 
@@ -168,8 +185,7 @@ Completed:
 
 # Latest Measurements
 
-The Phase 12 v2.0.0 release-gate regression suite completed 98 tests in 20.71 seconds
-(100 total with 2 pre-existing watchdog-dependent exclusions).
+The Phase 13 v2.1.0 release-gate regression suite completed 91 tests.
 See `BENCHMARKS.md` for recorded measurements.
 
 Line coverage remains pending installation of the declared development-only
@@ -246,8 +262,9 @@ Current Focus:
 - Phase 10 release recorded as `phase10-release`.
 - Phase 11 release recorded as `phase11-release`.
 - Phase 12 release recorded as `phase12-release` / `v2.0.0`.
+- Phase 13 release recorded as `phase13-release` / `v2.1.0`.
 
-Current development is complete. No further phases defined in ROADMAP.md.
+Current development is complete.
 
 ---
 
@@ -274,9 +291,11 @@ No implementation decision should override higher-level governance documents.
 
 # Next Milestone
 
-The ROADMAP is complete. All 7 planned phases (6–12) are delivered.
+The ROADMAP milestones through v2.0.0 are complete.
 
-- Phase 12 milestone gates have passed: tests, documentation, architecture, and
+Phase 13 (v2.1.0) is the first post-roadmap delivery.
+
+- Phase 13 milestone gates have passed: tests, documentation, architecture, and
   release record are complete.
-- EaglEs EyE v2.0.0 has been released.
-- Await explicit authorization for any post-roadmap direction.
+- EaglEs EyE v2.1.0 has been released.
+- Await explicit authorization for any further direction.

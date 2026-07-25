@@ -15,6 +15,8 @@ class MCPToolService(Service):
         self.evolution = None
         self.decisions = None
         self.cognitive = None
+        self.vector_search = None
+        self.awareness = None
 
     def start(self):
         super().start()
@@ -27,6 +29,8 @@ class MCPToolService(Service):
         self.evolution = self.kernel.get_service("ArchitectureEvolutionService")
         self.decisions = self.kernel.get_service("DecisionTrackingService")
         self.cognitive = self.kernel.get_service("CognitiveLayerService")
+        self.vector_search = self.kernel.get_service("VectorSearchService")
+        self.awareness = self.kernel.get_service("SemanticAwarenessService")
         print("[MCP TOOLS] Ready.")
 
     def list_tools(self):
@@ -53,6 +57,12 @@ class MCPToolService(Service):
              "description": "List engineering decision records, optionally filtered by workspace or session."},
             {"name": "get_decision", "inputSchema": {"type": "object", "properties": {"decision_id": {"type": "string"}}, "required": ["decision_id"]},
              "description": "Retrieve a single engineering decision record by ID."},
+            {"name": "search_semantic", "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}, "table": {"type": "string", "enum": ["chunks", "symbols", "events", "decision_records"]}, "top_k": {"type": "integer"}}, "required": ["query"]},
+             "description": "Semantic vector search across embedded entities."},
+            {"name": "get_similar", "inputSchema": {"type": "object", "properties": {"row_id": {"type": "integer"}, "table": {"type": "string", "enum": ["chunks", "symbols", "events", "decision_records"]}, "top_k": {"type": "integer"}}, "required": ["row_id", "table"]},
+             "description": "Find semantically similar items to a given entity by ID."},
+            {"name": "get_awareness_signals", "inputSchema": {"type": "object", "properties": {"signal_type": {"type": "string"}, "limit": {"type": "integer"}}},
+             "description": "List recent semantic awareness signals."},
         ]
 
     def call_tool(self, name, arguments):
@@ -122,4 +132,32 @@ class MCPToolService(Service):
             if not record:
                 return {"error": "Decision not found: " + str(decision_id)}
             return {"decision": record}
+        if name == "search_semantic":
+            if not self.vector_search or not self.vector_search.enabled:
+                return {"error": "Vector search is unavailable (embeddings disabled)"}
+            query = arguments.get("query", "")
+            if not query:
+                return {"error": "query is required for search_semantic"}
+            table = arguments.get("table", "chunks")
+            top_k = int(arguments.get("top_k", 10))
+            if table == "all":
+                results = self.vector_search.search_cross_entity(query, top_k)
+            else:
+                results = self.vector_search.search(query, table, top_k)
+            return {"results": results}
+        if name == "get_similar":
+            if not self.vector_search or not self.vector_search.enabled:
+                return {"error": "Vector search is unavailable (embeddings disabled)"}
+            row_id = arguments.get("row_id")
+            table = arguments.get("table", "chunks")
+            top_k = int(arguments.get("top_k", 5))
+            results = self.vector_search.find_similar(row_id, table, top_k)
+            return {"results": results}
+        if name == "get_awareness_signals":
+            if not self.awareness:
+                return {"error": "SemanticAwarenessService is unavailable"}
+            signal_type = arguments.get("signal_type")
+            limit = int(arguments.get("limit", 20))
+            signals = self.awareness.get_signals(signal_type, limit)
+            return {"signals": signals}
         return {"error": "Unknown tool: " + str(name)}

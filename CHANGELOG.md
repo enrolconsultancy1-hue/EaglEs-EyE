@@ -1,5 +1,21 @@
 # Changelog
 
+## phase13-release / v2.1.0 — 2026-07-25
+
+Phase 13 complete — Semantic Intelligence & Autonomous Awareness. v2.1.0 first post-roadmap delivery.
+
+- Added `EmbeddingService` with three provider modes: `disabled` (default), `simple` (zero-dependency hash-based), `sentence_transformers` (production semantic search).
+- Added `VectorSearchService` for cosine-similarity search across chunks, symbols, events, and decision records.
+- Added `SemanticAwarenessService` for event-driven evidence-backed pattern detection (module clustering).
+- Additive nullable `embedding BLOB` columns on `chunks`, `symbols`, `events`, `decision_records`, `reflections` tables.
+- New `awareness_signals` table with TTL-based cleanup.
+- Integrated embedding generation into `KnowledgeIndexerService` (config-gated, default off).
+- 3 new MCP tools: `search_semantic`, `get_similar`, `get_awareness_signals`. All 11 existing tools preserved.
+- Two new Mission Control views: Semantic Search panel and Awareness Signal feed.
+- All existing 9 GUI nav bars updated to link to the two new panels.
+- Strict boundaries preserved: no command execution, no workspace mutation, no hidden reasoning inference.
+- Phase 13 release gate: 28 Phase 13 tests passed; 91 total.
+
 ## phase12-release / v2.0.0 — 2026-07-25
 
 Phase 12 complete — EaglEs EyE Desktop GUI. v2.0.0 first complete product release.

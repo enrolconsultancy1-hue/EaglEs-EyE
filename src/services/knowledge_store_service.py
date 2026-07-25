@@ -76,6 +76,7 @@ class KnowledgeStoreService(Service):
                 version INTEGER NOT NULL, offset INTEGER NOT NULL, length INTEGER NOT NULL,
                 text TEXT NOT NULL, hash TEXT NOT NULL, embedding_id TEXT,
                 active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL,
+                embedding BLOB,
                 UNIQUE(document_id, version, offset),
                 FOREIGN KEY(document_id) REFERENCES documents(id)
             )""",
@@ -106,7 +107,7 @@ class KnowledgeStoreService(Service):
             )""",
             """CREATE TABLE IF NOT EXISTS reflections (
                 id INTEGER PRIMARY KEY, summary TEXT NOT NULL, payload TEXT NOT NULL DEFAULT '{}',
-                created_at TEXT NOT NULL
+                created_at TEXT NOT NULL, embedding BLOB
             )""",
             """CREATE TABLE IF NOT EXISTS retrieval_logs (
                 id INTEGER PRIMARY KEY, query TEXT NOT NULL, filters TEXT NOT NULL DEFAULT '{}',
@@ -126,7 +127,7 @@ class KnowledgeStoreService(Service):
                 line INTEGER, end_line INTEGER, line_start INTEGER, line_end INTEGER,
                 docstring TEXT, visibility TEXT, signature TEXT,
                 metadata TEXT NOT NULL DEFAULT '{}', active INTEGER NOT NULL DEFAULT 1,
-                created_at TEXT NOT NULL,
+                created_at TEXT NOT NULL, embedding BLOB,
                 UNIQUE(document_id, version, qualname, kind, line),
                 FOREIGN KEY(document_id) REFERENCES documents(id)
             )""",
@@ -144,12 +145,19 @@ class KnowledgeStoreService(Service):
                 id INTEGER PRIMARY KEY, workspace_id TEXT,
                 session_id TEXT, decision_type TEXT NOT NULL,
                 summary TEXT NOT NULL, evidence_citations TEXT NOT NULL DEFAULT '[]',
-                payload TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL
+                payload TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL,
+                embedding BLOB
             )""",
             """CREATE TABLE IF NOT EXISTS architecture_snapshots (
                 id INTEGER PRIMARY KEY, workspace_id TEXT NOT NULL,
                 session_id TEXT, label TEXT, symbol_data TEXT NOT NULL DEFAULT '{}',
                 created_at TEXT NOT NULL
+            )""",
+            """CREATE TABLE IF NOT EXISTS awareness_signals (
+                id INTEGER PRIMARY KEY, signal_type TEXT NOT NULL,
+                summary TEXT NOT NULL, evidence_citations TEXT NOT NULL DEFAULT '[]',
+                payload TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL,
+                ttl_after TEXT
             )""",
         )
         with self.transaction() as connection:
@@ -171,6 +179,10 @@ class KnowledgeStoreService(Service):
             connection.execute("CREATE INDEX IF NOT EXISTS idx_causal_target ON causal_edges(target_event_id)")
             connection.execute("CREATE INDEX IF NOT EXISTS idx_decision_workspace ON decision_records(workspace_id)")
             connection.execute("CREATE INDEX IF NOT EXISTS idx_snapshot_workspace ON architecture_snapshots(workspace_id)")
+            connection.execute("CREATE INDEX IF NOT EXISTS idx_awareness_created ON awareness_signals(created_at)")
+            connection.execute("CREATE INDEX IF NOT EXISTS idx_awareness_type ON awareness_signals(signal_type)")
+            for table in ("chunks", "symbols", "events", "decision_records", "reflections"):
+                self._ensure_column(connection, table, "embedding", "BLOB")
 
     @staticmethod
     def _ensure_column(connection, table, column, definition):

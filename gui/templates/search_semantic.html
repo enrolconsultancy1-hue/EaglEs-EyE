@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mission Control — Semantic Search</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav class="topbar">
+  <span class="logo">EaglEs EyE</span>
+  <span class="subtitle">Mission Control</span>
+  <a href="/">Dashboard</a>
+  <a href="/timeline.html">Timeline</a>
+  <a href="/twin.html">AI Twin</a>
+  <a href="/search.html">Search</a>
+  <a href="/search_semantic.html" class="active">Semantic</a>
+  <a href="/graph.html">Graph</a>
+  <a href="/explain.html">Explain</a>
+  <a href="/awareness.html">Awareness</a>
+  <a href="/metrics.html">Metrics</a>
+</nav>
+<main>
+  <h1>Semantic Search</h1>
+  <p class="info">Vector similarity search across embedded entities. Requires embeddings to be enabled.</p>
+  <div class="search-box">
+    <input type="text" id="semantic-input" placeholder="Semantic query..." size="60">
+    <select id="entity-select">
+      <option value="chunks">Chunks</option>
+      <option value="symbols">Symbols</option>
+      <option value="events">Events</option>
+      <option value="decision_records">Decision Records</option>
+      <option value="all">All</option>
+    </select>
+    <button onclick="doSemanticSearch()">Search</button>
+  </div>
+  <div id="semantic-results" class="results"><p>Enter a query above and click Search.</p></div>
+  <h2>Find Similar</h2>
+  <div class="search-box">
+    <input type="number" id="similar-id" placeholder="Entity ID" size="10">
+    <select id="similar-table">
+      <option value="chunks">Chunks</option>
+      <option value="symbols">Symbols</option>
+      <option value="events">Events</option>
+      <option value="decision_records">Decision Records</option>
+    </select>
+    <button onclick="doFindSimilar()">Find Similar</button>
+  </div>
+  <div id="similar-results" class="results"><p>Enter an entity ID above and click Find Similar.</p></div>
+</main>
+<script>
+async function apiCall(tool, args) {
+  const r = await fetch("/api/call", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tool:tool,arguments:args||{}})});
+  return r.json();
+}
+async function doSemanticSearch() {
+  const q = document.getElementById("semantic-input").value.trim();
+  if (!q) { document.getElementById("semantic-results").innerHTML = "<p>Enter a query.</p>"; return; }
+  const table = document.getElementById("entity-select").value;
+  const data = await apiCall("search_semantic", {query:q, table:table, top_k:10});
+  document.getElementById("semantic-results").innerHTML = "<h3>Semantic Results for: " + q + "</h3><pre>" + JSON.stringify(data, null, 2) + "</pre>";
+}
+async function doFindSimilar() {
+  const id = parseInt(document.getElementById("similar-id").value);
+  if (!id) { document.getElementById("similar-results").innerHTML = "<p>Enter a valid ID.</p>"; return; }
+  const table = document.getElementById("similar-table").value;
+  const data = await apiCall("get_similar", {row_id:id, table:table, top_k:5});
+  document.getElementById("similar-results").innerHTML = "<h3>Similar to ID " + id + " in " + table + "</h3><pre>" + JSON.stringify(data, null, 2) + "</pre>";
+}
+</script>
+</body>
+</html>

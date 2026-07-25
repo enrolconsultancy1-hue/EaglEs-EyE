@@ -378,6 +378,98 @@ Citations
 This starts the MCP server kernel, opens Mission Control in the default
 browser, and serves the dashboard at `http://127.0.0.1:9103`.
 
+## Phase 13 Semantic Intelligence & Autonomous Awareness (v2.1.0)
+
+Phase 13 evolves EaglEs EyE from a reactive query-response system into an
+evidence-backed semantic awareness platform by adding production embeddings,
+vector search, and event-driven awareness signals.
+
+### New services
+
+```
+EmbeddingService          — configurable embedding generation (simple hash or
+                            sentence-transformers), disabled by default
+VectorSearchService       — cosine-similarity search across embedded chunks,
+                            symbols, events, and decision records
+SemanticAwarenessService  — event-driven pattern detection producing
+                            evidence-backed awareness signals
+```
+
+### Embedding architecture
+
+`EmbeddingService` supports three provider modes:
+
+| Provider | Description | Dependencies |
+|----------|-------------|--------------|
+| `disabled` (default) | No embeddings generated | None |
+| `simple` | Deterministic hash-based embedding (128-dim) | None |
+| `sentence_transformers` | Production semantic embeddings | sentence-transformers |
+
+Embeddings are stored as additive nullable `BLOB` columns on the `chunks`,
+`symbols`, `events`, `decision_records`, and `reflections` tables. Existing
+records are never modified.
+
+### Vector search
+
+`VectorSearchService` provides:
+
+- `search(query, table, top_k)` — cosine similarity ranked results.
+- `find_similar(row_id, table, top_k)` — similarity to a known entity.
+- `search_cross_entity(query, top_k)` — simultaneous search across all
+  embedded entity types.
+
+Lexical `RetrievalService` is fully preserved. Vector search is additive.
+
+### Awareness signals
+
+`SemanticAwarenessService` subscribes to existing EventBus events
+(`FILE_CREATED`, `FILE_MODIFIED`) and detects evidence-backed patterns:
+
+- **Module clustering**: multiple edits detected in the same module within a
+  configurable window produces a `module_cluster` signal.
+
+All signals cite the triggering evidence. The service never infers intent,
+motivation, hidden reasoning, or future actions.
+
+Results are stored in the new `awareness_signals` table with TTL-based
+cleanup.
+
+### New MCP tools
+
+| Tool | Purpose |
+|------|---------|
+| `search_semantic` | Vector similarity search across embedded entities |
+| `get_similar` | Find semantically similar items to a known entity |
+| `get_awareness_signals` | List recent evidence-backed awareness signals |
+
+All existing 11 tools remain unchanged. Protocol unchanged (JSON-RPC 2.0).
+
+### New GUI views
+
+| View | File | Description |
+|------|------|-------------|
+| **Semantic Search** | `search_semantic.html` | Vector similarity search with entity type selection and similar-item finder |
+| **Awareness Feed** | `awareness.html` | Recent evidence-backed awareness signals with type filter |
+
+Nav bars on all existing views link to the two new panels. GUI remains a pure
+MCP consumer — no direct EyeKernel import, no SQLite writes, no workspace
+mutation.
+
+### Service startup order
+
+In `build_mcp_kernel()`, the three Phase 13 services are registered after the
+cognitive layer services and before `MCPToolService`:
+
+```
+EmbeddingService
+    ↓
+VectorSearchService
+    ↓
+SemanticAwarenessService
+    ↓
+MCPToolService  (consumes all three)
+```
+
 ## Boundaries
 
 `ReasoningService` only prepares evidence and proposals; it cannot execute

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mission Control — Awareness Signals</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav class="topbar">
+  <span class="logo">EaglEs EyE</span>
+  <span class="subtitle">Mission Control</span>
+  <a href="/">Dashboard</a>
+  <a href="/timeline.html">Timeline</a>
+  <a href="/twin.html">AI Twin</a>
+  <a href="/search.html">Search</a>
+  <a href="/search_semantic.html">Semantic</a>
+  <a href="/graph.html">Graph</a>
+  <a href="/explain.html">Explain</a>
+  <a href="/awareness.html" class="active">Awareness</a>
+  <a href="/metrics.html">Metrics</a>
+</nav>
+<main>
+  <h1>Awareness Signals</h1>
+  <p class="info">Evidence-backed semantic awareness signals detected from observed event patterns.</p>
+  <div class="search-box">
+    <input type="text" id="filter-type" placeholder="Filter by signal type (e.g. module_cluster)" size="40">
+    <button onclick="loadSignals()">Refresh</button>
+  </div>
+  <div id="awareness-feed" class="results"><p>Loading awareness signals...</p></div>
+</main>
+<script>
+async function apiCall(tool, args) {
+  const r = await fetch("/api/call", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tool:tool,arguments:args||{}})});
+  return r.json();
+}
+async function loadSignals() {
+  const filter = document.getElementById("filter-type").value.trim();
+  const args = filter ? {signal_type:filter, limit:50} : {limit:50};
+  const data = await apiCall("get_awareness_signals", args);
+  document.getElementById("awareness-feed").innerHTML = "<h3>Awareness Signals" + (filter ? " (" + filter + ")" : "") + "</h3><pre>" + JSON.stringify(data, null, 2) + "</pre>";
+}
+loadSignals();
+</script>
+</body>
+</html>

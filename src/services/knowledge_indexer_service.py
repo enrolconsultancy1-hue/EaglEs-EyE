@@ -32,6 +32,7 @@ class KnowledgeIndexerService(Service):
         self.store = self.kernel.get_service("KnowledgeStoreService")
         self.graph = self.kernel.get_service("KnowledgeGraphService")
         self.symbol_indexer = self.kernel.get_service("SymbolIndexerService")
+        self.embedding = self.kernel.get_service("EmbeddingService")
         if not self.store:
             raise RuntimeError("KnowledgeIndexerService requires KnowledgeStoreService.")
         config = self.kernel.get_config()
@@ -125,6 +126,20 @@ class KnowledgeIndexerService(Service):
         )
         if changed and content:
             self.store.add_chunks(document_id, version, self._chunk(content))
+            if self.embedding and self.embedding.enabled:
+                for chunk in self.store.get_document(path, include_chunks=True).get("chunks", []):
+                    emb = self.embedding.generate(chunk["text"])
+                    if emb:
+                        self.embedding.persist("chunks", chunk["id"], emb)
+        if changed and self.symbol_indexer and extension == ".py":
+            self.symbol_indexer.index_document(path)
+            if self.embedding and self.embedding.enabled:
+                symbols = self.store.find_symbols(os.path.basename(path).replace(".py", ""), limit=100)
+                for sym in symbols:
+                    sym_text = "%s %s %s %s" % (sym.get("name", ""), sym.get("qualname", ""), sym.get("docstring", ""), sym.get("signature", ""))
+                    emb = self.embedding.generate(sym_text)
+                    if emb:
+                        self.embedding.persist("symbols", sym["symbol_id"], emb)
         if changed and self.symbol_indexer and extension == ".py":
             self.symbol_indexer.index_document(path)
         if changed and self.graph and extension == ".py":

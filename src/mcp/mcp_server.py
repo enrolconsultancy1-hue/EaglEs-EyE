@@ -18,14 +18,17 @@ from services.context_builder_service import ContextBuilderService
 from services.cross_reference_service import CrossReferenceService
 from services.decision_tracking_service import DecisionTrackingService
 from services.documentation_link_service import DocumentationLinkService
+from services.embedding_service import EmbeddingService
 from services.execution_timeline_service import ExecutionTimelineService
 from services.knowledge_graph_service import KnowledgeGraphService
 from services.knowledge_indexer_service import KnowledgeIndexerService
 from services.knowledge_store_service import KnowledgeStoreService
 from services.mcp_tool_service import MCPToolService
 from services.retrieval_service import RetrievalService
+from services.semantic_awareness_service import SemanticAwarenessService
 from services.session_recorder_service import SessionRecorderService
 from services.symbol_indexer_service import SymbolIndexerService
+from services.vector_search_service import VectorSearchService
 from services.workspace_observer_service import WorkspaceObserverService
 
 
@@ -118,9 +121,13 @@ def build_mcp_kernel(memory_path=None):
     evolution = ArchitectureEvolutionService(kernel)
     decisions = DecisionTrackingService(kernel)
     cognitive = CognitiveLayerService(kernel)
+    embedding = EmbeddingService(kernel)
+    vector_search = VectorSearchService(kernel)
+    awareness = SemanticAwarenessService(kernel)
     mcp_tool = MCPToolService(kernel)
     services = (store, sym_idx, kg, indexer, retrieval, ctx, xref, arch, docs,
-                ws, timeline, sessions, causal, evolution, decisions, cognitive, mcp_tool)
+                ws, timeline, sessions, causal, evolution, decisions, cognitive,
+                embedding, vector_search, awareness, mcp_tool)
     for s in services:
         kernel.register_service(s)
         s.start()

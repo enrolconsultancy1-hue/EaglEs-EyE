@@ -1,8 +1,9 @@
 # Next Task
 
-Phase 12 is complete and released as `phase12-release` / `v2.0.0`.
+Phase 13 is complete and released as `phase13-release` / `v2.1.0`.
 
-The ROADMAP is complete. All planned phases through v2.0.0 have been delivered.
+All ROADMAP milestones through v2.0.0 are complete. Phase 13 (v2.1.0) is the
+first post-roadmap delivery — Semantic Intelligence & Autonomous Awareness.
 
-Stop here and wait for explicit authorization before beginning any post-roadmap
+Stop here and wait for explicit authorization before beginning any further
 direction.
