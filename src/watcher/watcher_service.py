@@ -91,6 +91,12 @@ class EyeFileHandler(FileSystemEventHandler):
                 event.src_path
             )
 
+    def on_moved(self, event):
+        """Represent a move using the stable existing lifecycle events."""
+        if not event.is_directory:
+            self.process("FILE_DELETED", event.src_path)
+            self.process("FILE_CREATED", event.dest_path)
+
 
 
 
@@ -108,7 +114,9 @@ class WatcherService(Service):
         )
 
 
-        self.observer = Observer()
+        # An Observer is runtime state, so it belongs to start(), not object
+        # construction.  This makes a service restart safe.
+        self.observer = None
 
         self.watch_path = None
 
@@ -146,6 +154,8 @@ class WatcherService(Service):
             ignored
         )
 
+        self.observer = Observer()
+
 
 
         handler = EyeFileHandler(
@@ -180,9 +190,9 @@ class WatcherService(Service):
 
 
     def stop(self):
-
-        self.observer.stop()
-
-        self.observer.join()
+        if self.observer:
+            self.observer.stop()
+            self.observer.join()
+            self.observer = None
 
         super().stop()

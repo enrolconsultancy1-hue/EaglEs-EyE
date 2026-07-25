@@ -10,26 +10,25 @@ class MirrorService(Service):
 
         super().__init__(kernel)
 
-        config = kernel.get_config()
-
-        self.source = os.path.abspath(
-            config.get(
-                "watch_path",
-                "workspace"
-            )
-        )
-
-        self.destination = os.path.abspath(
-            config.get(
-                "mirror_path",
-                "../EaglEs-EyE-data/mirror"
-            )
-        )
+        # Paths are deliberately initialized in start().  ConfigService loads
+        # configuration during the kernel lifecycle, after services are made.
+        self.source = None
+        self.destination = None
 
 
     def start(self):
 
         super().start()
+
+        config = self.kernel.get_config()
+
+        self.source = os.path.abspath(
+            config.get("watch_path", "workspace")
+        )
+
+        self.destination = os.path.abspath(
+            config.get("mirror_path", "../EaglEs-EyE-data/mirror")
+        )
 
         self.kernel.event_bus.subscribe(
             "FILE_CREATED",

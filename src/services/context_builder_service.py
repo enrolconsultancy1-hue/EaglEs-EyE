@@ -9,6 +9,7 @@ class ContextBuilderService(Service):
         super().__init__(kernel)
 
         self.memory_query = None
+        self.retrieval = None
 
 
 
@@ -22,6 +23,7 @@ class ContextBuilderService(Service):
                 "MemoryQueryService"
             )
         )
+        self.retrieval = self.kernel.get_service("RetrievalService")
 
 
         print(
@@ -41,10 +43,10 @@ class ContextBuilderService(Service):
             return ""
 
 
-        memories = self.memory_query.search(
-            question,
-            category="knowledge"
-        )
+        if self.retrieval:
+            return self.build_rag_context(question)
+
+        memories = self.memory_query.search(question, category="knowledge")
 
 
         if not memories:
@@ -74,6 +76,33 @@ class ContextBuilderService(Service):
         return "\n\n---\n\n".join(
             context
         )
+
+    def build_rag_context(self, question, max_chars=6000, limit=12):
+        """Build compact, cited context without blindly concatenating files."""
+        results = self.retrieval.search(question, limit=limit)
+        if not results:
+            return "No relevant memory found."
+        sections = []
+        seen = set()
+        used = 0
+        for item in results:
+            identity = (item["path"], item["offset"])
+            if identity in seen:
+                continue
+            seen.add(identity)
+            excerpt = item["content"].strip()
+            if not excerpt:
+                continue
+            remaining = max_chars - used
+            if remaining <= 0:
+                break
+            excerpt = excerpt[:remaining]
+            section = "Source: {0}\nCitation: {1}\n\nRelevant:\n{2}".format(
+                item["filename"], item["citation"], excerpt
+            )
+            sections.append(section)
+            used += len(excerpt)
+        return "\n\n---\n\n".join(sections) or "No relevant memory found."
 
 
 

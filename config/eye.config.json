@@ -5,6 +5,14 @@
 
     "memory_path": "../EaglEs-EyE-data/memory",
 
+    "chunk_size": 1200,
+
+    "chunk_overlap": 200,
+
+    "max_index_bytes": 5242880,
+
+    "verbose_indexing": false,
+
     "ignore": [
         ".venv",
         ".git",

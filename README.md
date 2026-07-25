@@ -1,54 +1,43 @@
 # EaglEs EyE
 
-> A modular cognitive AI kernel that observes, remembers, reflects, reasons, and eventually acts.
+> A modular cognitive AI kernel that observes, remembers, reflects, reasons,
+> and is evolving into a safe software-understanding engine.
 
 ## Vision
 
-EaglEs EyE is an event-driven AI operating kernel designed to become the foundation for autonomous intelligent systems.
+EaglEs EyE is an event-driven AI operating kernel. Its services communicate
+through an EventBus to observe filesystem activity, mirror files, preserve
+legacy memory, build durable knowledge, and provide evidence for future agents.
 
-The project is built around modular services that work together through an event bus.
+## Current capabilities
 
-Current modules include:
-
-- Kernel
-- Event Bus
-- Configuration Service
-- Logger Service
-- Watcher Service
-- Mirror Service
-- Memory Service
-- Semantic Memory Service
-- Memory Query Service
-- Memory Reindex Service
-- Context Builder Service
-- Reflection Service
-- Vision Service
-
+- Kernel, EventBus, configuration, logging, watcher, and mirror services.
+- Legacy JSON event, semantic, and vision memory compatibility.
+- SQLite-backed versioned documents, chunks, events, reflections, and graph
+  facts via `knowledge.db`.
+- Queued incremental indexing, lexical retrieval, citations, and bounded RAG
+  context building.
+- Static Python symbols, import/dependency relationships, event subscriptions,
+  architecture observations, documentation coverage, and cross-reference queries.
+- Read-only reasoning foundations and MCP-shaped domain tools.
 
 ## Roadmap
 
-- Phase 1 — Kernel ✅
+- Phases 1–5 — kernel, eventing, core services, and semantic memory complete.
+- Phase 6 — vision, unified memory gateway, and brain foundations complete.
+- Phase 7 — reliability and software understanding in progress.
+- Phase 8 — planned cognitive intelligence: hybrid retrieval, working memory,
+  approval-gated planning, and provider abstractions.
 
-- Phase 2 — Event Bus ✅
+## Development
 
-- Phase 3 — Core Services ✅
+Run the targeted semantic and reliability suite from the repository root:
 
-- Phase 4 — Stable Cognitive Kernel ✅
+```powershell
+$env:PYTHONPATH='src'
+python -m unittest -q test_semantic_intelligence test_import_graph test_binary_files test_sqlite_recovery test_stress test_recovery test_retrieval_quality test_cross_reference test_large_repository
+```
 
-- Phase 5 — Semantic Memory ✅
-
-- Phase 6 — Vision ✅
-  - 6.1 Vision Perception Service ✅
-  - 6.2 Perception Filtering & Semantic Classification ✅
-  - 6.3 Vision Memory Integration & Deduplication ✅
-  - 6.4 Unified Memory Gateway & Recall ✅
-
-- Phase 7 — Brain (SQLite) 🚧
-
-- Phase 8 — Reflection Intelligence
-
-- Phase 9 — Planning
-
-- Phase 10 — Agentic AI
-
-- Phase 11 — AI Operating System
+See [ARCHITECTURE.md](ARCHITECTURE.md), [PROJECT_STATUS.md](PROJECT_STATUS.md),
+[NEXT_TASK.md](NEXT_TASK.md), and [BENCHMARKS.md](BENCHMARKS.md) for the
+current design and measured Phase 7 results.
