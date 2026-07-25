@@ -72,6 +72,8 @@ class BrainService(Service):
 
         self.connection.commit()
 
+
+
         self.kernel.event_bus.subscribe(
             "FILE_CREATED",
             self.learn
@@ -91,6 +93,17 @@ class BrainService(Service):
             "IMAGE_OBSERVED",
             self.learn
         )
+
+        self.kernel.event_bus.subscribe(
+            "SEMANTIC_LEARNED",
+            self.learn
+        )
+
+        self.kernel.event_bus.subscribe(
+            "VISION_MEMORY_STORED",
+            self.learn
+        )
+
 
         print(
             "[BRAIN] Ready."
@@ -122,6 +135,7 @@ class BrainService(Service):
             "path",
             ""
         )
+
 
         self.connection.execute(
 
@@ -158,6 +172,7 @@ class BrainService(Service):
         )
 
         self.connection.commit()
+
 
         print(
             "[BRAIN] Learned:",
@@ -296,3 +311,88 @@ class BrainService(Service):
         )
 
         return cursor.fetchone()[0]
+
+
+
+    def consolidate(
+        self
+    ):
+
+        sources = [
+
+            "knowledge.json",
+
+            "vision_memory.json",
+
+            "memory.json"
+
+        ]
+
+
+        total = 0
+
+
+        for source in sources:
+
+
+            path = os.path.join(
+
+                self.memory_path,
+
+                source
+
+            )
+
+
+            if not os.path.exists(path):
+
+                continue
+
+
+
+            self.connection.execute(
+
+                """
+
+                INSERT INTO events (
+
+                    event_type,
+
+                    path,
+
+                    timestamp
+
+                )
+
+                VALUES (
+
+                    ?, ?, ?
+
+                )
+
+                """,
+
+                (
+
+                    "CONSOLIDATED",
+
+                    source,
+
+                    datetime.now().isoformat()
+
+                )
+
+            )
+
+
+            total += 1
+
+
+
+        self.connection.commit()
+
+
+        print(
+            "[BRAIN] Consolidated:",
+            total
+        )
