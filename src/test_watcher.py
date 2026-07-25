@@ -46,9 +46,9 @@ vision = VisionService(kernel)
 
 vision_memory = VisionMemoryService(kernel)
 
-gateway = MemoryGatewayService(kernel)
-
 brain = BrainService(kernel)
+
+gateway = MemoryGatewayService(kernel)
 
 watcher = WatcherService(kernel)
 
@@ -77,9 +77,9 @@ kernel.register_service(vision)
 
 kernel.register_service(vision_memory)
 
-kernel.register_service(gateway)
-
 kernel.register_service(brain)
+
+kernel.register_service(gateway)
 
 kernel.register_service(watcher)
 
@@ -108,9 +108,9 @@ except KeyboardInterrupt:
 
     watcher.stop()
 
-    brain.stop()
-
     gateway.stop()
+
+    brain.stop()
 
     vision_memory.stop()
 

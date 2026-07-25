@@ -44,6 +44,7 @@ class EyeFileHandler(FileSystemEventHandler):
         self.event_bus.publish(
             event_type,
             {
+                "event_type": event_type,
                 "path": path
             }
         )
@@ -89,8 +90,6 @@ class EyeFileHandler(FileSystemEventHandler):
                 "FILE_DELETED",
                 event.src_path
             )
-
-
 
 
 
@@ -171,6 +170,7 @@ class WatcherService(Service):
         self.kernel.event_bus.publish(
             "WATCHER_STARTED",
             {
+                "event_type": "WATCHER_STARTED",
                 "path": self.watch_path
             }
         )

@@ -21,6 +21,8 @@ class MemoryGatewayService(Service):
 
         self.sources = {}
 
+        self.brain = None
+
 
 
 
@@ -55,8 +57,13 @@ class MemoryGatewayService(Service):
         }
 
 
+        self.brain = self.kernel.services.get(
+            "BrainService"
+        )
+
+
         self.kernel.event_bus.subscribe(
-            "VISION_OBSERVED",
+            "IMAGE_OBSERVED",
             self.receive
         )
 
@@ -80,12 +87,45 @@ class MemoryGatewayService(Service):
         data
     ):
 
+
+        filename = data.get(
+            "filename"
+        )
+
+
         print(
             "[MEMORY GATEWAY] Received:",
-            data.get(
-                "filename"
-            )
+            filename
         )
+
+
+
+        if self.brain:
+
+
+            self.brain.remember(
+
+                "vision",
+
+                json.dumps(
+                    data
+                )
+
+            )
+
+
+            print(
+                "[MEMORY GATEWAY] Sent to Brain:",
+                filename
+            )
+
+
+        else:
+
+
+            print(
+                "[MEMORY GATEWAY] Brain unavailable."
+            )
 
 
 
@@ -189,6 +229,21 @@ class MemoryGatewayService(Service):
         self,
         query
     ):
+
+
+        if self.brain:
+
+
+            brain_results = self.brain.recall(
+                query
+            )
+
+
+            if brain_results:
+
+                return brain_results
+
+
 
         return self.search(
             query
