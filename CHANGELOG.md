@@ -1,5 +1,15 @@
 # Changelog
 
+## phase12-release / v2.0.0 — 2026-07-25
+
+Phase 12 complete — EaglEs EyE Desktop GUI. v2.0.0 first complete product release.
+
+- Added `gui/` package with MCP client, web server, and Mission Control UI.
+- Seven Mission Control views: Dashboard, Timeline Viewer, AI Twin Explorer, Search, Graph View, Cognitive Explain Panel, Metrics.
+- Cognitive Explain Panel enforcing Phase 10 evidence boundary: Observed Facts → Derived Relationships → Evidence-Backed Explanation.
+- Strict consumer boundary: GUI communicates via MCP only — never imports EyeKernel, writes SQLite, mutates workspaces, or executes commands.
+- Phase 12 release gate: 21 Phase 12 tests passed; 98 total (100 total with 2 pre-existing watchdog exclusions).
+
 ## phase11-release — 2026-07-25
 
 Phase 11 complete — MCP Ecosystem.

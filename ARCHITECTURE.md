@@ -309,6 +309,75 @@ Then send JSON-RPC 2.0 messages over stdin:
     {"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}
     {"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"search_memory","arguments":{"query":"RetrievalService"}}}
 
+## Phase 12 Desktop GUI (v2.0.0)
+
+Phase 12 delivers the first complete product release: EaglEs EyE Desktop GUI
+("Mission Control"). The GUI is a pure consumer — it communicates exclusively
+through the Phase 11 MCP layer.
+
+```
+Desktop GUI
+        ↓
+   MCP Client
+        ↓
+   MCP Server
+        ↓
+  Evidence-backed Services
+```
+
+### Architecture
+
+```
+gui/
+  __init__.py
+  mcp_client.py     — JSON-RPC 2.0 client connecting to MCP server via stdio
+  server.py         — HTTP server (built-in http.server) proxying MCP API
+  app.py            — Entry point booting both MCP kernel and web server
+  templates/        — HTML views for each Mission Control panel
+  static/           — CSS and other static assets
+```
+
+### Mission Control views
+
+| View | File | Backend Services Used |
+|---|---|---|
+| **Dashboard** | `templates/dashboard.html` | GetRecentEvents, session/agent data via MCP |
+| **Timeline Viewer** | `templates/timeline.html` | GetRecentEvents, ordered event citations |
+| **AI Twin Explorer** | `templates/twin.html` | ListDecisions, Twin artifact descriptions |
+| **Search** | `templates/search.html` | SearchMemory, CrossReference |
+| **Graph View** | `templates/graph.html` | CrossReference, causal chain, snapshot data |
+| **Cognitive Explain Panel** | `templates/explain.html` | ExplainChange, GetCausalChain, GetDecision, ListDecisions |
+| **Metrics** | `templates/metrics.html` | GetRecentEvents aggregations |
+
+### Cognitive Explain Panel
+
+The Explain panel visually enforces the Phase 10 evidence boundary:
+
+```
+Observed Facts
+        ↓
+Derived Relationships
+        ↓
+Evidence-Backed Explanation
+        ↓
+Citations
+```
+
+### Security
+
+- GUI connects to MCP server at `127.0.0.1:9103` (localhost only).
+- All operations are read-only through the MCP layer.
+- No command execution, file editing, or git mutation is exposed.
+- No direct EyeKernel import, no SQLite writes, no service modifications.
+- Configuration via environment variables (`GUI_HOST`, `GUI_PORT`, `GUI_OPEN_BROWSER`).
+
+### Running
+
+    python -m gui.app
+
+This starts the MCP server kernel, opens Mission Control in the default
+browser, and serves the dashboard at `http://127.0.0.1:9103`.
+
 ## Boundaries
 
 `ReasoningService` only prepares evidence and proposals; it cannot execute

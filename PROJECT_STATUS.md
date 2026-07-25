@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 11 — MCP Ecosystem is complete.
+Phase 12 — EaglEs EyE Desktop GUI (v2.0.0) is complete.
 
 ---
 
@@ -19,6 +19,23 @@ and engineering evidence.
 ---
 
 # Completed Foundations
+
+## Phase 12 — EaglEs EyE Desktop GUI (v2.0.0)
+
+Completed:
+
+- `gui/` package with `mcp_client.py` (JSON-RPC 2.0 client), `server.py` (HTTP server proxying MCP API), `app.py` (entry point booting kernel + web server).
+- Seven Mission Control views: Dashboard, Timeline Viewer, AI Twin Explorer, Search, Graph View, Cognitive Explain Panel, and Metrics.
+- Dashboard with workspace, session, event, and agent activity cards plus real-time event feed.
+- Timeline Viewer with ordered event table, timestamps, types, paths, and citations.
+- AI Twin Explorer showing session timeline, events log, summary artifact descriptions, and decision record counts.
+- Search with full-text memory search and symbol cross-reference capabilities.
+- Graph View describing symbol relationships, dependency graphs, causal chains, and architecture snapshot access.
+- Cognitive Explain Panel enforcing the Phase 10 evidence boundary: Observed Facts → Derived Relationships → Evidence-Backed Explanation, with citations and scope notes.
+- Metrics panel with event counts, session data, repository health, and system info.
+- Strict consumer boundary: GUI never imports EyeKernel, bypasses MCP, writes to SQLite, mutates workspaces, executes commands, or stages commits.
+- Comprehensive Phase 12 test suite: 21 tests covering MCP client, server, templates, app bootstrap, and large workspace performance.
+- Version target achieved: v2.0.0.
 
 ## Phase 11 — MCP Ecosystem
 
@@ -151,8 +168,8 @@ Completed:
 
 # Latest Measurements
 
-The Phase 11 release-gate regression suite completed 77 tests in 12.82 seconds
-(79 total with 2 pre-existing watchdog-dependent exclusions).
+The Phase 12 v2.0.0 release-gate regression suite completed 98 tests in 20.71 seconds
+(100 total with 2 pre-existing watchdog-dependent exclusions).
 See `BENCHMARKS.md` for recorded measurements.
 
 Line coverage remains pending installation of the declared development-only
@@ -228,7 +245,9 @@ Current Focus:
 - Phase 9 release recorded as `phase9-release`.
 - Phase 10 release recorded as `phase10-release`.
 - Phase 11 release recorded as `phase11-release`.
-- Awaiting explicit authorization to begin Phase 12.
+- Phase 12 release recorded as `phase12-release` / `v2.0.0`.
+
+Current development is complete. No further phases defined in ROADMAP.md.
 
 ---
 
@@ -253,8 +272,11 @@ No implementation decision should override higher-level governance documents.
 
 # Next Milestone
 
-Before Phase 12:
+# Next Milestone
 
-- Phase 11 milestone gates have passed: tests, documentation, architecture, and
+The ROADMAP is complete. All 7 planned phases (6–12) are delivered.
+
+- Phase 12 milestone gates have passed: tests, documentation, architecture, and
   release record are complete.
-- Await explicit authorization before beginning Phase 12.
+- EaglEs EyE v2.0.0 has been released.
+- Await explicit authorization for any post-roadmap direction.

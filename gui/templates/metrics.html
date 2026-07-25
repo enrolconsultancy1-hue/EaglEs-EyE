@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mission Control — Metrics</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav class="topbar">
+  <span class="logo">EaglEs EyE</span>
+  <span class="subtitle">Mission Control</span>
+  <a href="/">Dashboard</a>
+  <a href="/timeline.html">Timeline</a>
+  <a href="/twin.html">AI Twin</a>
+  <a href="/search.html">Search</a>
+  <a href="/graph.html">Graph</a>
+  <a href="/explain.html">Explain</a>
+  <a href="/metrics.html" class="active">Metrics</a>
+</nav>
+<main>
+  <h1>Metrics</h1>
+  <div class="cards">
+    <div class="card"><h3>Session Count</h3><div class="card-body" id="m-sessions">Loading...</div></div>
+    <div class="card"><h3>Event Count</h3><div class="card-body" id="m-events">Loading...</div></div>
+    <div class="card"><h3>Repository Health</h3><div class="card-body" id="m-health">Observable via ArchitectureAnalyzerService and DocumentationLinkService.</div></div>
+    <div class="card"><h3>System</h3><div class="card-body" id="m-system">MCP server connected. GUI version v2.0.0</div></div>
+  </div>
+  <h2>Recent Metrics Data</h2>
+  <div id="metrics-detail" class="results">
+    <p>Metrics are computed from observable event data, session records, and architecture snapshots.</p>
+  </div>
+</main>
+<script>
+async function apiCall(tool, args) {
+  const r = await fetch("/api/call", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tool:tool,arguments:args||{}})});
+  return r.json();
+}
+async function loadMetrics() {
+  const events = await apiCall("get_recent_events", {limit:100});
+  const count = (events.events || []).length;
+  document.getElementById("m-events").textContent = count + " recent events";
+  document.getElementById("m-sessions").textContent = "Session data available via ExecutionTimelineService";
+}
+loadMetrics();
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mission Control — Explain</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav class="topbar">
+  <span class="logo">EaglEs EyE</span>
+  <span class="subtitle">Mission Control</span>
+  <a href="/">Dashboard</a>
+  <a href="/timeline.html">Timeline</a>
+  <a href="/twin.html">AI Twin</a>
+  <a href="/search.html">Search</a>
+  <a href="/graph.html">Graph</a>
+  <a href="/explain.html" class="active">Explain</a>
+  <a href="/metrics.html">Metrics</a>
+</nav>
+<main>
+  <h1>Cognitive Explain Panel</h1>
+  <p class="scope-note">Evidence-backed explanations. No hidden reasoning.</p>
+  <div class="search-box">
+    <input type="text" id="entity-input" placeholder="Entity path (e.g. src/services/retrieval_service.py)" size="70">
+    <button onclick="doExplain()">Explain Change</button>
+  </div>
+  <div id="explain-output" class="explain-layers"></div>
+  <h2>Causal Chain Query</h2>
+  <div class="search-box">
+    <input type="text" id="event-id-input" placeholder="Event ID" size="40">
+    <select id="direction-select"><option value="forward">Forward</option><option value="backward">Backward</option></select>
+    <button onclick="doCausal()">Trace Chain</button>
+  </div>
+  <div id="causal-output" class="results"></div>
+  <h2>Decision Records</h2>
+  <div class="search-box">
+    <input type="text" id="decision-id-input" placeholder="Decision ID" size="40">
+    <button onclick="doDecision()">Get Decision</button>
+    <button onclick="listDecisions()">List All</button>
+  </div>
+  <div id="decision-output" class="results"></div>
+</main>
+<script>
+async function apiCall(tool, args) {
+  const r = await fetch("/api/call", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tool:tool,arguments:args||{}})});
+  return r.json();
+}
+function renderExplain(data) {
+  const div = document.getElementById("explain-output");
+  if (data.error) { div.innerHTML = "<div class='error'>"+data.error+"</div>"; return; }
+  const exp = data.explanation || data;
+  const html = "<div class='explain-layer facts'><h3>Observed Facts</h3><pre>" + JSON.stringify(exp.observed_facts || {}, null, 2) + "</pre></div>" +
+    "<div class='explain-arrow'>↓</div>" +
+    "<div class='explain-layer derived'><h3>Derived Relationships</h3><pre>" + JSON.stringify(exp.derived_relationships || {}, null, 2) + "</pre></div>" +
+    "<div class='explain-arrow'>↓</div>" +
+    "<div class='explain-layer explanation'><h3>Evidence-Backed Explanation</h3><p>" + (exp.explanation || "") + "</p></div>" +
+    "<div class='explain-layer scope'><h3>Citations</h3><pre>" + JSON.stringify(exp.citations || [], null, 2) + "</pre></div>" +
+    "<p class='scope-note'>" + (exp.scope || "Observable evidence only.") + "</p>";
+  div.innerHTML = html;
+}
+async function doExplain() {
+  const entity = document.getElementById("entity-input").value.trim();
+  if (!entity) { document.getElementById("explain-output").innerHTML = "<p>Enter an entity path.</p>"; return; }
+  const data = await apiCall("explain_change", {entity_path: entity});
+  renderExplain(data);
+}
+async function doCausal() {
+  const eid = document.getElementById("event-id-input").value.trim();
+  if (!eid) { document.getElementById("causal-output").innerHTML = "<p>Enter an event ID.</p>"; return; }
+  const dir = document.getElementById("direction-select").value;
+  const data = await apiCall("get_causal_chain", {event_id: eid, direction: dir});
+  document.getElementById("causal-output").innerHTML = "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
+}
+async function doDecision() {
+  const did = document.getElementById("decision-id-input").value.trim();
+  if (!did) { document.getElementById("decision-output").innerHTML = "<p>Enter a decision ID.</p>"; return; }
+  const data = await apiCall("get_decision", {decision_id: did});
+  document.getElementById("decision-output").innerHTML = "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
+}
+async function listDecisions() {
+  const data = await apiCall("list_decisions", {});
+  document.getElementById("decision-output").innerHTML = "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mission Control — Dashboard</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav class="topbar">
+  <span class="logo">EaglEs EyE</span>
+  <span class="subtitle">Mission Control</span>
+  <a href="/" class="active">Dashboard</a>
+  <a href="/timeline.html">Timeline</a>
+  <a href="/twin.html">AI Twin</a>
+  <a href="/search.html">Search</a>
+  <a href="/graph.html">Graph</a>
+  <a href="/explain.html">Explain</a>
+  <a href="/metrics.html">Metrics</a>
+</nav>
+<main>
+  <h1>Dashboard</h1>
+  <div class="cards">
+    <div class="card" id="card-workspace"><h3>Active Workspace</h3><div class="card-body">Loading...</div></div>
+    <div class="card" id="card-sessions"><h3>Sessions</h3><div class="card-body">Loading...</div></div>
+    <div class="card" id="card-events"><h3>Recent Events</h3><div class="card-body">Loading...</div></div>
+    <div class="card" id="card-agents"><h3>Agent Activity</h3><div class="card-body">Loading...</div></div>
+  </div>
+  <h2>Recent Event Feed</h2>
+  <table class="event-table" id="event-feed">
+    <thead><tr><th>Time</th><th>Type</th><th>Path</th></tr></thead>
+    <tbody id="event-body"><tr><td colspan="3">Loading...</td></tr></tbody>
+  </table>
+</main>
+<script>
+async function apiCall(tool, args) {
+  const r = await fetch("/api/call", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tool:tool,arguments:args||{}})});
+  return r.json();
+}
+async function loadDashboard() {
+  const events = await apiCall("get_recent_events", {limit:20});
+  if (events.error) { document.getElementById("event-body").innerHTML = "<tr><td colspan='3'>Error: "+events.error+"</td></tr>"; return; }
+  const list = events.events || [];
+  document.getElementById("card-events").querySelector(".card-body").textContent = list.length + " events in view";
+  document.getElementById("card-workspace").querySelector(".card-body").textContent = "Connected via MCP";
+  document.getElementById("card-sessions").querySelector(".card-body").textContent = "Active session data available via Timeline";
+  document.getElementById("card-agents").querySelector(".card-body").textContent = "Agent detection via AgentDetectorService";
+  const tbody = document.getElementById("event-body");
+  tbody.innerHTML = "";
+  if (list.length === 0) { tbody.innerHTML = "<tr><td colspan='3'>No events recorded</td></tr>"; return; }
+  list.forEach(function(e) {
+    const row = tbody.insertRow();
+    row.insertCell().textContent = (e.timestamp || "?").slice(0,19);
+    row.insertCell().textContent = e.event_type || "?";
+    row.insertCell().textContent = (e.path || "?").slice(0,80);
+  });
+}
+loadDashboard();
+</script>
+</body>
+</html>

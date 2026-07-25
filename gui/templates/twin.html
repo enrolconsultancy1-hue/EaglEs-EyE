@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mission Control — AI Twin Explorer</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav class="topbar">
+  <span class="logo">EaglEs EyE</span>
+  <span class="subtitle">Mission Control</span>
+  <a href="/">Dashboard</a>
+  <a href="/timeline.html">Timeline</a>
+  <a href="/twin.html" class="active">AI Twin</a>
+  <a href="/search.html">Search</a>
+  <a href="/graph.html">Graph</a>
+  <a href="/explain.html">Explain</a>
+  <a href="/metrics.html">Metrics</a>
+</nav>
+<main>
+  <h1>AI Twin Explorer</h1>
+  <p class="scope-note">Review recorded Twin artifacts: timeline, events, and summary from observed sessions.</p>
+  <div class="cards">
+    <div class="card"><h3>Timeline Artifact</h3><div class="card-body" id="twin-timeline">Load from recorded session data via GetRecentEvents or SessionReconstructionService.</div></div>
+    <div class="card"><h3>Events Log</h3><div class="card-body" id="twin-events">Event replay available through ReplayService for bounded sessions.</div></div>
+    <div class="card"><h3>Session Summary</h3><div class="card-body" id="twin-summary">Summary artifacts (timeline.json, events.json, summary.json) stored in configured Twin directory.</div></div>
+    <div class="card"><h3>Decisions</h3><div class="card-body" id="twin-decisions">Loading...</div></div>
+  </div>
+</main>
+<script>
+async function apiCall(tool, args) {
+  const r = await fetch("/api/call", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tool:tool,arguments:args||{}})});
+  return r.json();
+}
+async function loadTwin() {
+  const dec = await apiCall("list_decisions", {});
+  if (dec.error) { document.getElementById("twin-decisions").textContent = "No decision data available: " + dec.error; return; }
+  const records = dec.decisions || [];
+  document.getElementById("twin-decisions").textContent = records.length + " decision record(s) recorded";
+}
+loadTwin();
+</script>
+</body>
+</html>

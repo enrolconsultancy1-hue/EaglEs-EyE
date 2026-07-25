@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mission Control — Graph View</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav class="topbar">
+  <span class="logo">EaglEs EyE</span>
+  <span class="subtitle">Mission Control</span>
+  <a href="/">Dashboard</a>
+  <a href="/timeline.html">Timeline</a>
+  <a href="/twin.html">AI Twin</a>
+  <a href="/search.html">Search</a>
+  <a href="/graph.html" class="active">Graph</a>
+  <a href="/explain.html">Explain</a>
+  <a href="/metrics.html">Metrics</a>
+</nav>
+<main>
+  <h1>Graph View</h1>
+  <p class="scope-note">Symbol relationships, dependency graph, and causal chain visualization.</p>
+  <div class="cards">
+    <div class="card"><h3>Symbol Relationships</h3><div class="card-body" id="graph-symbols">Use CrossReferenceService to find symbol relationships. Enter a symbol name in Search to explore.</div></div>
+    <div class="card"><h3>Dependency Graph</h3><div class="card-body" id="graph-deps">KnowledgeGraphService indexes Python imports, inheritance, and composition. Available via cross-reference tools.</div></div>
+    <div class="card"><h3>Causal Chains</h3><div class="card-body" id="graph-causal">Query causal chains from event IDs. Use the Explain panel to explore change sequences.</div></div>
+    <div class="card"><h3>Architecture Snapshots</h3><div class="card-body" id="graph-snapshots">Loading...</div></div>
+  </div>
+</main>
+<script>
+async function apiCall(tool, args) {
+  const r = await fetch("/api/call", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tool:tool,arguments:args||{}})});
+  return r.json();
+}
+</script>
+</body>
+</html>

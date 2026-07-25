@@ -98,7 +98,7 @@ Become an MCP-native observer.
 
 Any MCP-compatible AI can query EaglEs EyE.
 
-## Phase 12 — EaglEs EyE Desktop GUI
+## Phase 12 — EaglEs EyE Desktop GUI ✅ COMPLETE (v2.0.0)
 
 The flagship release: Mission Control for AI Software Engineering.
 
@@ -115,15 +115,18 @@ The flagship release: Mission Control for AI Software Engineering.
 - Repository health
 - Multi-agent monitoring
 
+### Acceptance
+
+> "Open Mission Control and see everything the AI did."
+
 ## Version roadmap
 
-| Version | Milestone |
-| --- | --- |
-| v0.8.0 | AI Twin Observer Foundation |
-| v0.9.0 | Multi-Agent Observation |
-| v1.0.0 | Cognitive Layer |
-| v1.1.0 | MCP Ecosystem |
-| v2.0.0 | EaglEs EyE Desktop GUI |
+| Version | Milestone | Status |
+| --- | --- | --- |
+| v0.8.0 | AI Twin Observer Foundation | ✅ |
+| v0.9.0 | Multi-Agent Observation | ✅ |
+| v1.0.0 | Cognitive Layer | ✅ |
+| v1.1.0 | MCP Ecosystem | ✅ |
+| v2.0.0 | EaglEs EyE Desktop GUI | ✅ |
 
-Version 2.0 is the first complete product release rather than a collection of
-services.
+All roadmap milestones through v2.0.0 are complete.

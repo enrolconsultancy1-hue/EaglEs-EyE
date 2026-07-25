@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mission Control — Timeline</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav class="topbar">
+  <span class="logo">EaglEs EyE</span>
+  <span class="subtitle">Mission Control</span>
+  <a href="/">Dashboard</a>
+  <a href="/timeline.html" class="active">Timeline</a>
+  <a href="/twin.html">AI Twin</a>
+  <a href="/search.html">Search</a>
+  <a href="/graph.html">Graph</a>
+  <a href="/explain.html">Explain</a>
+  <a href="/metrics.html">Metrics</a>
+</nav>
+<main>
+  <h1>Timeline Viewer</h1>
+  <p class="scope-note">Ordered events with citations. Replay steps available from recorded sessions.</p>
+  <div class="controls">
+    <button onclick="refreshTimeline()">Refresh</button>
+  </div>
+  <table class="event-table">
+    <thead><tr><th>#</th><th>Timestamp</th><th>Type</th><th>Path / Detail</th><th>Citation</th></tr></thead>
+    <tbody id="timeline-body"><tr><td colspan="5">Loading...</td></tr></tbody>
+  </table>
+</main>
+<script>
+async function apiCall(tool, args) {
+  const r = await fetch("/api/call", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tool:tool,arguments:args||{}})});
+  return r.json();
+}
+async function refreshTimeline() {
+  const data = await apiCall("get_recent_events", {limit:50});
+  const tbody = document.getElementById("timeline-body");
+  if (data.error) { tbody.innerHTML = "<tr><td colspan='5'>Error: "+data.error+"</td></tr>"; return; }
+  const list = data.events || [];
+  tbody.innerHTML = "";
+  if (list.length === 0) { tbody.innerHTML = "<tr><td colspan='5'>No events recorded</td></tr>"; return; }
+  list.forEach(function(e, i) {
+    const row = tbody.insertRow();
+    row.insertCell().textContent = i + 1;
+    row.insertCell().textContent = (e.timestamp || "?").slice(0,19);
+    row.insertCell().textContent = e.event_type || "?";
+    row.insertCell().textContent = (e.path || e.detail || "?").slice(0,80);
+    row.insertCell().textContent = "event:" + (e.id || "?");
+  });
+}
+refreshTimeline();
+</script>
+</body>
+</html>

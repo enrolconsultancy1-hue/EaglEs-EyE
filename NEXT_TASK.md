@@ -1,4 +1,8 @@
 # Next Task
 
-Phase 11 is complete and released as `phase11-release`. Stop here and wait for
-explicit authorization before beginning Phase 12 — EaglEs EyE Desktop GUI.
+Phase 12 is complete and released as `phase12-release` / `v2.0.0`.
+
+The ROADMAP is complete. All planned phases through v2.0.0 have been delivered.
+
+Stop here and wait for explicit authorization before beginning any post-roadmap
+direction.

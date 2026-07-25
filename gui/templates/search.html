@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mission Control — Search</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav class="topbar">
+  <span class="logo">EaglEs EyE</span>
+  <span class="subtitle">Mission Control</span>
+  <a href="/">Dashboard</a>
+  <a href="/timeline.html">Timeline</a>
+  <a href="/twin.html">AI Twin</a>
+  <a href="/search.html" class="active">Search</a>
+  <a href="/graph.html">Graph</a>
+  <a href="/explain.html">Explain</a>
+  <a href="/metrics.html">Metrics</a>
+</nav>
+<main>
+  <h1>Search</h1>
+  <div class="search-box">
+    <input type="text" id="search-input" placeholder="Search memory (e.g. function name, file path, symbol...)" size="60">
+    <button onclick="doSearch()">Search</button>
+  </div>
+  <div id="search-results" class="results"><p>Enter a query above and click Search.</p></div>
+  <h2>Cross Reference</h2>
+  <div class="search-box">
+    <input type="text" id="xref-input" placeholder="Subject (e.g. class name, symbol...)" size="60">
+    <button onclick="doXref()">Find References</button>
+  </div>
+  <div id="xref-results" class="results"><p>Enter a subject above and click Find References.</p></div>
+</main>
+<script>
+async function apiCall(tool, args) {
+  const r = await fetch("/api/call", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tool:tool,arguments:args||{}})});
+  return r.json();
+}
+async function doSearch() {
+  const q = document.getElementById("search-input").value.trim();
+  if (!q) { document.getElementById("search-results").innerHTML = "<p>Enter a query.</p>"; return; }
+  const data = await apiCall("search_memory", {query:q, limit:20});
+  document.getElementById("search-results").innerHTML = "<h3>Results for: " + q + "</h3><pre>" + JSON.stringify(data, null, 2) + "</pre>";
+}
+async function doXref() {
+  const s = document.getElementById("xref-input").value.trim();
+  if (!s) { document.getElementById("xref-results").innerHTML = "<p>Enter a subject.</p>"; return; }
+  const data = await apiCall("cross_reference", {subject:s, limit:20});
+  document.getElementById("xref-results").innerHTML = "<h3>References for: " + s + "</h3><pre>" + JSON.stringify(data, null, 2) + "</pre>";
+}
+</script>
+</body>
+</html>
