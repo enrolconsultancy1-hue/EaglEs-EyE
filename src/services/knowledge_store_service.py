@@ -276,8 +276,65 @@ class KnowledgeStoreService(Service):
             rows = [self._workspace_row(row) for row in connection.execute(query, parameters)]
         return rows
 
+    def get_workspace(self, workspace_id):
+        with self.transaction() as connection:
+            row = connection.execute("SELECT * FROM workspaces WHERE id = ?", (workspace_id,)).fetchone()
+        return self._workspace_row(row) if row else None
+
+    def create_session(self, session_id, workspace_id, metadata=None):
+        now = utc_now()
+        with self.transaction() as connection:
+            connection.execute(
+                """INSERT INTO sessions(id, workspace_id, status, metadata, started_at)
+                VALUES (?, ?, 'active', ?, ?)""",
+                (session_id, workspace_id, json.dumps(metadata or {}, ensure_ascii=False, sort_keys=True), now),
+            )
+            row = connection.execute("SELECT * FROM sessions WHERE id = ?", (session_id,)).fetchone()
+        return self._session_row(row)
+
+    def close_session(self, session_id):
+        with self.transaction() as connection:
+            connection.execute("UPDATE sessions SET status = 'closed', ended_at = ? WHERE id = ?", (utc_now(), session_id))
+            row = connection.execute("SELECT * FROM sessions WHERE id = ?", (session_id,)).fetchone()
+        return self._session_row(row) if row else None
+
+    def get_session(self, session_id):
+        with self.transaction() as connection:
+            row = connection.execute("SELECT * FROM sessions WHERE id = ?", (session_id,)).fetchone()
+        return self._session_row(row) if row else None
+
+    def list_sessions(self, workspace_id=None, active_only=False):
+        clauses, parameters = [], []
+        if workspace_id:
+            clauses.append("workspace_id = ?"); parameters.append(workspace_id)
+        if active_only:
+            clauses.append("status = 'active'")
+        query = "SELECT * FROM sessions" + (" WHERE " + " AND ".join(clauses) if clauses else "") + " ORDER BY started_at"
+        with self.transaction() as connection:
+            rows = [self._session_row(row) for row in connection.execute(query, parameters)]
+        return rows
+
+    def session_events(self, workspace_id=None, session_id=None, start=None, end=None):
+        clauses, parameters = [], []
+        for column, value in (("workspace_id", workspace_id), ("session_id", session_id)):
+            if value:
+                clauses.append(column + " = ?"); parameters.append(value)
+        if start:
+            clauses.append("created_at >= ?"); parameters.append(start)
+        if end:
+            clauses.append("created_at <= ?"); parameters.append(end)
+        query = "SELECT * FROM events" + (" WHERE " + " AND ".join(clauses) if clauses else "") + " ORDER BY created_at, id"
+        with self.transaction() as connection:
+            return [dict(row) for row in connection.execute(query, parameters)]
+
     @staticmethod
     def _workspace_row(row):
+        result = dict(row)
+        result["metadata"] = json.loads(result["metadata"] or "{}")
+        return result
+
+    @staticmethod
+    def _session_row(row):
         result = dict(row)
         result["metadata"] = json.loads(result["metadata"] or "{}")
         return result

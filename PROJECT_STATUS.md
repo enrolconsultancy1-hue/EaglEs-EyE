@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 8 — AI Twin Observer Foundation is in progress.
+Phase 8 — AI Twin Observer Foundation is complete.
 
 ---
 
@@ -30,6 +30,11 @@ Completed:
 - Deterministic, isolated multi-workspace registration through
   `WorkspaceObserverService`.
 - Preserved single-workspace watcher behavior and existing event APIs.
+- Durable session recording, recovery of active sessions, and session-scoped
+  execution timelines.
+- Atomic local Twin artifact generation and evidence-based replay.
+- Agent detection from visible workspace markers only.
+- Workspace/session isolation regression coverage.
 
 ## Phase 6 — Semantic Memory Foundation
 
@@ -183,7 +188,8 @@ Current Focus:
 
 - Phase 7 release recorded as `phase7-release`.
 - Phase 8.1 workspace identity foundation is complete.
-- Awaiting Phase 8.2 authorization after the checkpoint.
+- Phase 8 release recorded as `phase8-release`.
+- Awaiting explicit authorization to begin Phase 9.
 
 ---
 
@@ -208,8 +214,8 @@ No implementation decision should override higher-level governance documents.
 
 # Next Milestone
 
-Before Phase 8:
+Before Phase 9:
 
-- Phase 7 milestone gates have passed: tests, documentation, architecture, and
+- Phase 8 milestone gates have passed: tests, documentation, architecture, and
   release record are complete.
-- Await explicit authorization before beginning Phase 8.
+- Await explicit authorization before beginning Phase 9.

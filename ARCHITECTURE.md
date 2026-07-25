@@ -58,6 +58,18 @@ nullable `workspace_id` and `session_id` columns on events. Existing events
 remain unchanged and valid; future phases may attach identity only when there
 is explicit observable evidence.
 
+## Phase 8 AI Twin observer foundation
+
+`SessionRecorderService` creates durable workspace-scoped session boundaries
+and records only caller-supplied observable events. `ExecutionTimelineService`
+orders that evidence by timestamp and event ID within a workspace or session.
+
+`TwinBuilderService` creates local, atomically written `timeline.json`,
+`events.json`, and `summary.json` artifacts under the configured Twin directory.
+`ReplayService` replays those persisted citations without adding explanations
+that the evidence does not support. `AgentDetectorService` classifies only
+visible workspace markers and returns the marker paths as its evidence.
+
 `KnowledgeIndexerService` receives filesystem events through a queue and one
 worker. It safely skips text extraction for binary, malformed, or oversized
 files while preserving metadata. `RetrievalService` supplies a stable lexical

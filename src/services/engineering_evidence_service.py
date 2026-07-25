@@ -29,31 +29,31 @@ class EngineeringEvidenceService(Service):
         if not self.store:
             raise RuntimeError("EngineeringEvidenceService requires KnowledgeStoreService.")
 
-    def record_git(self, workspace, action, output=None, metadata=None):
-        return self._record("git", workspace, {"action": action, "output": output}, metadata)
+    def record_git(self, workspace, action, output=None, metadata=None, workspace_id=None, session_id=None):
+        return self._record("git", workspace, {"action": action, "output": output}, metadata, workspace_id, session_id)
 
-    def record_build(self, workspace, command, exit_code, output=None, metadata=None):
+    def record_build(self, workspace, command, exit_code, output=None, metadata=None, workspace_id=None, session_id=None):
         return self._record("build", workspace, {
             "command": command, "exit_code": int(exit_code), "output": output,
-        }, metadata)
+        }, metadata, workspace_id, session_id)
 
-    def record_test(self, workspace, command, exit_code, output=None, metadata=None):
+    def record_test(self, workspace, command, exit_code, output=None, metadata=None, workspace_id=None, session_id=None):
         return self._record("test", workspace, {
             "command": command, "exit_code": int(exit_code), "output": output,
-        }, metadata)
+        }, metadata, workspace_id, session_id)
 
-    def record_terminal(self, workspace, command, output=None, exit_code=None, metadata=None):
+    def record_terminal(self, workspace, command, output=None, exit_code=None, metadata=None, workspace_id=None, session_id=None):
         payload = {"command": command, "output": output}
         if exit_code is not None:
             payload["exit_code"] = int(exit_code)
-        return self._record("terminal", workspace, payload, metadata)
+        return self._record("terminal", workspace, payload, metadata, workspace_id, session_id)
 
-    def _record(self, kind, workspace, payload, metadata):
+    def _record(self, kind, workspace, payload, metadata, workspace_id=None, session_id=None):
         if kind not in self.EVENT_TYPES:
             raise ValueError("Unsupported evidence kind: %s" % kind)
         path = os.path.abspath(workspace)
         evidence = dict(metadata or {})
         evidence.update({key: value for key, value in payload.items() if value is not None})
         evidence["evidence_kind"] = kind
-        self.store.record_event(self.EVENT_TYPES[kind], path, evidence)
+        self.store.record_event(self.EVENT_TYPES[kind], path, evidence, workspace_id, session_id)
         return {"event_type": self.EVENT_TYPES[kind], "workspace": path, "payload": evidence}

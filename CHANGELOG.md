@@ -1,5 +1,15 @@
 # Changelog
 
+## phase8-release — 2026-07-25
+
+Phase 8 complete — AI Twin Observer Foundation.
+
+- Added isolated workspace identity and durable session boundaries.
+- Added workspace/session-scoped execution timelines and recovery queries.
+- Added atomically written local Twin artifacts and evidence-based replay.
+- Added visible-marker-only agent detection with explicit evidence.
+- Phase 8 release gate: 28 targeted tests passed.
+
 ## phase7-release — 2026-07-25
 
 Phase 7 complete — Reliability, Project Intelligence, Software Understanding,

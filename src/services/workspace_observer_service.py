@@ -34,6 +34,13 @@ class WorkspaceObserverService(Service):
     def workspaces(self, include_inactive=True):
         return self.store.list_workspaces(include_inactive=include_inactive)
 
+    def capture_event(self, workspace_id, event_type, path, payload=None, session_id=None):
+        workspace = self.store.get_workspace(workspace_id)
+        if not workspace or workspace["status"] != "active":
+            raise ValueError("Workspace must be active: %s" % workspace_id)
+        observed_path = os.path.abspath(path)
+        self.store.record_event(event_type, observed_path, payload or {}, workspace_id, session_id)
+
     @staticmethod
     def workspace_id(path):
         normalized = os.path.normcase(os.path.abspath(path))
