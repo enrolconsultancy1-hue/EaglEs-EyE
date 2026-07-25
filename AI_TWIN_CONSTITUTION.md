@@ -1,206 +1,122 @@
-# EaglEs EyE – AI Twin Observer Constitution
+# EaglEs EyE AI Twin Constitution
 
-## Permanent engineering constitution
+Version: 1.0
+Status: FROZEN
 
-> Read this document completely before making code changes.
+---
 
-This document is the permanent engineering constitution of EaglEs EyE.
+# 1. Mission
 
-Do not rewrite the project, replace working components, or introduce breaking
-architectural changes. Observe the existing architecture, understand it, extend
-it, preserve it, and strengthen it. Every implementation must respect the
-project's long-term mission.
+EaglEs EyE exists to become an autonomous AI Twin engineering system.
 
-## Project mission
+Its purpose:
 
-EaglEs EyE reconstructs an evidence-based digital twin of any AI coding session
-by continuously observing every artifact the agent produces: files it creates or
-modifies, tests it executes, builds it performs, Git actions it records, and
-documented plans, design decisions, or reasoning artifacts it leaves within a
-local workspace.
+- Observe software projects
+- Mirror project intelligence
+- Build persistent memory
+- Understand architecture
+- Learn from AI coding agents
+- Assist engineering decisions
+- Protect project integrity
 
-The result is a replayable, searchable, auditable, and continuously evolving
-engineering history grounded entirely in observable evidence.
+The mission is permanent.
 
-## One-line vision
+---
 
-**Watch. Understand. Reconstruct. Twin.**
+# 2. Prime Directive
 
-## The golden rule
+EaglEs EyE must preserve project intelligence.
 
-Every new feature must strengthen EaglEs EyE's ability to:
+No feature, experiment, or optimization may violate:
 
-- Observe
-- Understand
-- Reconstruct
-- Twin
+- Project stability
+- Memory integrity
+- Architectural clarity
+- Human control
 
-AI coding sessions through observable evidence. If a feature does not advance
-this mission, reconsider it, defer it, or implement it as an optional extension.
+---
 
-## What EaglEs EyE is
+# 3. Chain of Command
 
-EaglEs EyE is not another coding assistant, RAG application, or AI IDE. It is
-an **AI Twin Observer**: it watches AI software engineering from beginning to
-end and reconstructs what happened using observable evidence.
+All development decisions follow this hierarchy:
 
-## Observable evidence
+1. AI_TWIN_CONSTITUTION.md
 
-Everything must be based only on observable artifacts, including:
+↓
 
-- filesystem events; created, modified, deleted, and renamed files
-- source code, documentation, plans, architecture documents, TODO files,
-  `NEXT_TASK.md`, `PROJECT_STATUS.md`, and `README.md`
-- Git commits, branches, and tags
-- build logs, compiler output, runtime logs, test execution, benchmark reports,
-  and configuration
-- MCP interactions and terminal output, where available
+2. ROADMAP.md
 
-Never claim access to hidden model reasoning. If an AI explicitly writes its
-reasoning into the workspace, that file is observable evidence.
+↓
 
-## Digital twin
+3. ARCHITECTURE.md
 
-For every watched workspace, EaglEs EyE should gradually build an evidence-based
-AI Twin containing:
+↓
 
-- execution timeline and event history
-- knowledge, symbol, dependency, and project graphs
-- architecture evolution, retrieval index, and reflections
-- replay history and engineering audit trail
+4. PROJECT_STATUS.md
 
-Everything remains local by default.
+↓
 
-## Long-term architecture
+5. NEXT_TASK.md
 
-```text
-Observer Layer
-      ↓
-Knowledge Layer
-      ↓
-Understanding Layer
-      ↓
-Reasoning Layer
-      ↓
-AI Twin Layer
-```
 
-### Observer layer
+Lower documents cannot override higher documents.
 
-The observer is the heart of the system. It should eventually observe the
-filesystem, Git, builds, tests, documentation, project evolution,
-configuration, logs, terminal activity, and MCP tools where available.
+---
 
-Observation must remain passive: it must never interfere with the watched
-workspace unless explicitly instructed.
+# 4. Development Philosophy
 
-### Knowledge layer
+EaglEs EyE is built as:
 
-Responsible for deterministic, reproducible indexing, versioning, chunking,
-storage, retrieval, and citations.
+- Agentic AI infrastructure
+- RAG capable memory system
+- MCP-compatible intelligence layer
+- Autonomous engineering assistant
 
-### Understanding layer
+---
 
-Responsible for understanding software: symbols, imports, inheritance, function
-calls, dependency and project graphs, documentation links, and architecture
-evolution.
+# 5. Coding Rules
 
-### Reasoning layer
+Codex must:
 
-Reasoning must reference observable evidence. Do not invent facts or fabricate
-explanations. Every conclusion must be traceable to files, events, Git history,
-tests, documentation, or graphs.
+- Understand before modifying
+- Preserve existing architecture
+- Avoid unnecessary rewrites
+- Update documentation after changes
+- Maintain backward compatibility
+- Add tests for new capabilities
 
-### AI Twin layer
+---
 
-The long-term objective is a replayable engineering twin for every coding
-session, for example:
+# 6. Forbidden Behavior
 
-```text
-Twins/
-  Workspace_A/
-    Session_001/
-      timeline.json
-      events.json
-      symbols.json
-      dependency_graph.json
-      project_graph.json
-      git.json
-      tests.json
-      summary.md
-      replay.md
-      metrics.json
-```
+Codex must never:
 
-Everything must be reproducible.
+- Change mission direction
+- Remove core services without approval
+- Replace architecture casually
+- Introduce dependencies without justification
+- Ignore roadmap priorities
 
-## Current architecture
+---
 
-Respect all existing services; extend them rather than replacing them. Existing
-services include, without limitation:
+# 7. Phase Completion Requirement
 
-- `WatcherService`, `MirrorService`, and `MemoryService`
-- `SemanticMemoryService`, `KnowledgeStoreService`, and
-  `KnowledgeIndexerService`
-- `RetrievalService`, `ReasoningService`, and `KnowledgeGraphService`
-- `ReflectionService`, `ContextBuilderService`, and `MemoryGatewayService`
-- `MCPToolService` and all existing tests
+No phase is complete until the milestone gate passes.
 
-## Implementation principles
+Every phase requires:
 
-Always:
+- Tests passing
+- Documentation updated
+- Architecture updated
+- Status updated
+- Commit created
+- Push completed
+- Release recorded
 
-- preserve backwards compatibility
-- prefer extension over replacement
-- maintain service boundaries and modularity
-- write regression tests and update documentation
-- preserve SQLite and JSON compatibility
-- preserve existing APIs whenever practical
+---
 
-## Development order
+# Constitution Status
 
-Prefer this order:
+THIS DOCUMENT IS FROZEN.
 
-1. Observation
-2. Timeline
-3. Session reconstruction
-4. Knowledge
-5. Graph
-6. Understanding
-7. Replay
-8. Comparison
-9. AI Twin
-
-Not the reverse.
-
-## Never do these
-
-Do not replace working architecture, remove services without justification,
-redesign the kernel unless absolutely required, introduce unnecessary
-frameworks, make the project cloud-dependent, claim hidden AI reasoning, or
-break replayability.
-
-## Success
-
-The project succeeds when it can answer questions such as:
-
-- “What happened yesterday?”
-- “Replay the implementation of `RetrievalService`.”
-- “Show every test executed before the last commit.”
-- “Compare Claude Code and Codex implementing the same feature.”
-- “Why did the architecture change?”
-- “What evidence supports this conclusion?”
-
-Every answer must be backed by observable evidence.
-
-## Engineering checkpoint
-
-Before implementing any feature, ask:
-
-> Does this improve EaglEs EyE's ability to Observe, Understand, Reconstruct,
-> or Twin AI coding sessions?
-
-If the answer is no, stop and reconsider. Choose a design that supports the
-mission. This constitution has higher priority than convenience, shortcuts, or
-unnecessary redesigns. Protect the architecture, preserve progress, and build
-toward the AI Twin Observer.
+Future changes require explicit human approval.
