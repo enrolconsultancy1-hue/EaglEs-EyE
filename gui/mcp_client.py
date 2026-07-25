@@ -1,29 +1,52 @@
 """MCP JSON-RPC 2.0 client — connects to MCP server via stdio subprocess."""
 
 import json
+import os
 import subprocess
 import sys
+import threading
 
 
 class MCPClient:
     def __init__(self, process=None):
         self._proc = process
         self._request_id = 0
+        self._stderr_thread = None
 
     @classmethod
-    def connect_stdio(cls, args=None):
+    def connect_stdio(cls, args=None, extra_env=None):
         if args is None:
-            args = [sys.executable, "-m", "mcp.mcp_server"]
+            args = [sys.executable, "-m", "src.mcp.mcp_server"]
+        env = os.environ.copy()
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        env["PYTHONPATH"] = os.path.join(project_root, "src")
+        if extra_env:
+            env.update(extra_env)
         proc = subprocess.Popen(
             args,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            env=env,
         )
         client = cls(proc)
+        client._drain_stderr()
         client._initialize()
         return client
+
+    def _drain_stderr(self):
+        stderr_lines = []
+
+        def _reader():
+            try:
+                for line in iter(self._proc.stderr.readline, ""):
+                    stderr_lines.append(line)
+            except ValueError:
+                pass
+
+        self._stderr_thread = threading.Thread(target=_reader, daemon=True)
+        self._stderr_thread.start()
 
     def _next_id(self):
         self._request_id += 1

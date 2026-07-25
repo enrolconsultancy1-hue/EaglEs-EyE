@@ -1,5 +1,6 @@
 """MCP JSON-RPC 2.0 server — initialize, tools/list, tools/call with structured errors."""
 
+import contextlib
 import json
 import os
 import sys
@@ -131,30 +132,32 @@ def main():
     if not memory_path:
         tmp = tempfile.TemporaryDirectory()
         memory_path = tmp.name
-    kernel, services = build_mcp_kernel(memory_path)
-    mcp_tool = kernel.get_service("MCPToolService")
-    registry = ToolRegistry()
-    for tool in mcp_tool.list_tools():
-        name = tool["name"]
-        schema = tool["inputSchema"]
-        def make_fn(tool_name):
-            return lambda **kw: mcp_tool.call_tool(tool_name, kw)
-        registry.register(name, make_fn(name), schema, tool.get("description", ""))
-    server = MCPServer(registry)
-    config = kernel.get_config() or {}
-    tcp_transport = None
-    if config.get("mcp", {}).get("tcp", {}).get("enabled", False):
-        host = config["mcp"]["tcp"].get("host", "127.0.0.1")
-        port = config["mcp"]["tcp"].get("port", 9102)
-        tcp_transport = TcpTransport(host, port)
-        tcp_transport.start(server.handle_message)
+    with contextlib.redirect_stdout(sys.stderr):
+        kernel, services = build_mcp_kernel(memory_path)
+        mcp_tool = kernel.get_service("MCPToolService")
+        registry = ToolRegistry()
+        for tool in mcp_tool.list_tools():
+            name = tool["name"]
+            schema = tool["inputSchema"]
+            def make_fn(tool_name):
+                return lambda **kw: mcp_tool.call_tool(tool_name, kw)
+            registry.register(name, make_fn(name), schema, tool.get("description", ""))
+        server = MCPServer(registry)
+        config = kernel.get_config() or {}
+        tcp_transport = None
+        if config.get("mcp", {}).get("tcp", {}).get("enabled", False):
+            host = config["mcp"]["tcp"].get("host", "127.0.0.1")
+            port = config["mcp"]["tcp"].get("port", 9102)
+            tcp_transport = TcpTransport(host, port)
+            tcp_transport.start(server.handle_message)
     try:
         server.run_stdio()
     finally:
-        if tcp_transport:
-            tcp_transport.stop()
-        for s in reversed(services):
-            s.stop()
+        with contextlib.redirect_stdout(sys.stderr):
+            if tcp_transport:
+                tcp_transport.stop()
+            for s in reversed(services):
+                s.stop()
 
 
 if __name__ == "__main__":

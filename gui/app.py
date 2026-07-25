@@ -12,14 +12,11 @@ from gui.server import run_gui_server
 
 
 def start_mcp_server_process(memory_path=None):
-    args = [sys.executable, "-m", "mcp.mcp_server"]
+    args = [sys.executable, "-m", "src.mcp.mcp_server"]
+    extra_env = {}
     if memory_path:
-        env = os.environ.copy()
-        env["EAGLE_EYE_MEMORY_PATH"] = memory_path
-        proc_env = env
-    else:
-        proc_env = os.environ.copy()
-    return MCPClient.connect_stdio(args)
+        extra_env["EAGLE_EYE_MEMORY_PATH"] = memory_path
+    return MCPClient.connect_stdio(args, extra_env=extra_env)
 
 
 def main():

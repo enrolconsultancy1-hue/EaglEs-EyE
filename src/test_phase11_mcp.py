@@ -2,8 +2,10 @@
 
 import json
 import os
+import subprocess
 import sys
 import tempfile
+import threading
 import unittest
 
 from core.kernel import EyeKernel
@@ -340,6 +342,179 @@ class Phase11SecurityDefaultsTests(unittest.TestCase):
         registry.register("read_only", lambda: "ok", {"type": "object"})
         result = registry.call_tool("read_only", {})
         self.assertEqual(result, "ok")
+
+
+class Phase11StdioProtocolBoundaryTests(unittest.TestCase):
+    """Verify MCP stdio transport emits only JSON-RPC on stdout."""
+
+    @staticmethod
+    def _project_root():
+        return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    @staticmethod
+    def _server_env(tmp):
+        env = os.environ.copy()
+        env["EAGLE_EYE_MEMORY_PATH"] = tmp
+        env["PYTHONPATH"] = os.path.join(Phase11StdioProtocolBoundaryTests._project_root(), "src")
+        return env
+
+    @staticmethod
+    def _drain_stderr(proc):
+        lines = []
+        def _reader():
+            try:
+                for line in iter(proc.stderr.readline, ""):
+                    lines.append(line)
+            except ValueError:
+                pass
+        t = threading.Thread(target=_reader, daemon=True)
+        t.start()
+        return lines, t
+
+    def test_stdio_stdout_contains_only_jsonrpc_after_initialize(self):
+        tmp = tempfile.mkdtemp()
+        env = self._server_env(tmp)
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "src.mcp.mcp_server"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=env,
+        )
+        self._drain_stderr(proc)
+        request = '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26"}}\n'
+        try:
+            proc.stdin.write(request)
+            proc.stdin.flush()
+            stdout_line = proc.stdout.readline()
+            self.assertIsNotNone(stdout_line)
+            parsed = json.loads(stdout_line.strip())
+            self.assertEqual(parsed["jsonrpc"], "2.0")
+            self.assertEqual(parsed["id"], 1)
+            self.assertIn("result", parsed)
+            self.assertIn("serverInfo", parsed["result"])
+        finally:
+            try:
+                proc.terminate()
+                proc.wait(timeout=10)
+            except Exception:
+                proc.kill()
+
+    def test_stdio_stdout_no_startup_text_before_first_jsonrpc(self):
+        tmp = tempfile.mkdtemp()
+        env = self._server_env(tmp)
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "src.mcp.mcp_server"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=env,
+        )
+        self._drain_stderr(proc)
+        request = '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26"}}\n'
+        try:
+            proc.stdin.write(request)
+            proc.stdin.flush()
+            stdout_line = proc.stdout.readline()
+            self.assertIsNotNone(stdout_line)
+            self.assertTrue(stdout_line.startswith("{"),
+                            "stdout must start with JSON object, got: " + repr(stdout_line[:100]))
+            self.assertNotIn("[SERVICE]", stdout_line,
+                             "stdout must not contain service startup logs")
+        finally:
+            try:
+                proc.terminate()
+                proc.wait(timeout=10)
+            except Exception:
+                proc.kill()
+
+    def test_stdio_stdout_contains_no_startup_logs_in_stderr_check(self):
+        tmp = tempfile.mkdtemp()
+        env = self._server_env(tmp)
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "src.mcp.mcp_server"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=env,
+        )
+        stderr_lines, stderr_thread = self._drain_stderr(proc)
+        request = '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26"}}\n'
+        try:
+            proc.stdin.write(request)
+            proc.stdin.flush()
+            stdout_line = proc.stdout.readline()
+            self.assertIsNotNone(stdout_line)
+            proc.terminate()
+            proc.wait(timeout=10)
+            stderr_thread.join(timeout=3)
+            all_stderr = "".join(stderr_lines)
+            self.assertIn("[SERVICE]", all_stderr,
+                          "stderr should contain service startup logs")
+        finally:
+            try:
+                try:
+                    proc.terminate()
+                    proc.wait(timeout=5)
+                except Exception:
+                    proc.kill()
+            except Exception:
+                pass
+
+    def test_mcp_client_connects_via_stdio(self):
+        from gui.mcp_client import MCPClient
+        tmp = tempfile.mkdtemp()
+        env = self._server_env(tmp)
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "src.mcp.mcp_server"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=env,
+        )
+        client = MCPClient(proc)
+        try:
+            client._drain_stderr()
+            client._initialize()
+            tools = client.list_tools()
+            self.assertIsInstance(tools, list)
+            self.assertGreater(len(tools), 0)
+            tool_names = [t["name"] for t in tools]
+            self.assertIn("search_memory", tool_names)
+            self.assertIn("explain_change", tool_names)
+        finally:
+            try:
+                client.close()
+            except Exception:
+                pass
+
+    def test_stdio_tools_call_returns_structured_data(self):
+        from gui.mcp_client import MCPClient
+        tmp = tempfile.mkdtemp()
+        env = self._server_env(tmp)
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "src.mcp.mcp_server"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=env,
+        )
+        client = MCPClient(proc)
+        try:
+            client._drain_stderr()
+            client._initialize()
+            result = client.call_tool("get_recent_events", {"limit": 5})
+            self.assertIsInstance(result, dict)
+        finally:
+            try:
+                client.close()
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":
