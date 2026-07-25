@@ -207,7 +207,21 @@ The system must never claim:
 - Private decision processes.
 
 `CognitiveLayerService` extends the existing read-only reasoning foundation by
-producing structured explanations grounded in evidence graphs and citations.
+producing structured explanations grounded in evidence graphs and citations. It
+coordinates three subordinate services:
+
+- **`CausalGraphService`** — tracks observable event relationship edges
+  (`causal_edges` table) with citation-backed relation types, supporting
+  upstream/downstream queries and full causal chain reconstruction.
+- **`ArchitectureEvolutionService`** — creates point-in-time architecture
+  snapshots (symbol sets, dependency graphs, module structure), computes
+  structural diffs, and supports evolution timeline queries.
+- **`DecisionTrackingService`** — persists explicit engineering decision records
+  (`decision_records` table) with workspace/session scoping, rationale, and
+  supporting citations; decisions are recorded facts, not inferred intent.
+
+All three services are additive: they extend the Phase 6 SQLite schema without
+modifying prior tables or breaking existing Phase 6–9 APIs.
 
 ## Boundaries
 

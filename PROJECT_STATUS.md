@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 9 — Multi-Agent Observation is complete.
+Phase 10 — Evidence-Based Cognitive Layer is complete.
 
 ---
 
@@ -19,6 +19,18 @@ and engineering evidence.
 ---
 
 # Completed Foundations
+
+## Phase 10 — Evidence-Based Cognitive Layer
+
+Completed:
+
+- `CausalGraphService` for observable event relationship tracking and evidence-backed causal chains (link/query upstream/downstream/causal chains).
+- `ArchitectureEvolutionService` for snapshot creation, structural diff, and evolution queries over time.
+- `DecisionTrackingService` for recording explicit engineering decisions linked to workspace, session, and citations.
+- `CognitiveLayerService` evidence-backed explanation engine that separates observed facts → derived relationships → explanations.
+- Additive SQLite schema (causal_edges, decision_records, architecture_snapshots tables) preserving all prior Phase 6–9 data.
+- Strict evidence-boundary enforcement: no hidden reasoning, intent, or undocumented motivation claimed.
+- Comprehensive Phase 10 regression suite: 7 tests verifying causal edges, snapshots, decisions, explanations, evidence-boundary enforcement, query, and graceful edge cases.
 
 ## Phase 9 — Multi-Agent Observation
 
@@ -125,7 +137,7 @@ Completed:
 
 # Latest Measurements
 
-The Phase 8.1 checkpoint regression suite completed 26 tests in 10.34 seconds.
+The Phase 10 release-gate regression suite completed 38 tests in 14.42 seconds.
 See `BENCHMARKS.md` for recorded measurements.
 
 Line coverage remains pending installation of the declared development-only
@@ -201,7 +213,8 @@ Current Focus:
 - Phase 7 release recorded as `phase7-release`.
 - Phase 8 release recorded as `phase8-release`.
 - Phase 9 release recorded as `phase9-release`.
-- Awaiting explicit authorization to begin Phase 10.
+- Phase 10 release recorded as `phase10-release`.
+- Awaiting explicit authorization to begin Phase 11.
 
 ---
 
@@ -226,8 +239,8 @@ No implementation decision should override higher-level governance documents.
 
 # Next Milestone
 
-Before Phase 10:
+Before Phase 11:
 
-- Phase 9 milestone gates have passed: tests, documentation, architecture, and
+- Phase 10 milestone gates have passed: tests, documentation, architecture, and
   release record are complete.
-- Await explicit authorization before beginning Phase 10.
+- Await explicit authorization before beginning Phase 11.

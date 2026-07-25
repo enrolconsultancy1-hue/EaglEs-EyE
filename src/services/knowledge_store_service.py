@@ -134,6 +134,23 @@ class KnowledgeStoreService(Service):
             "CREATE INDEX IF NOT EXISTS idx_events_path ON events(path)",
             "CREATE INDEX IF NOT EXISTS idx_relationships_source ON relationships(source_document_id)",
             "CREATE INDEX IF NOT EXISTS idx_symbols_name ON symbols(name, active)",
+            """CREATE TABLE IF NOT EXISTS causal_edges (
+                id INTEGER PRIMARY KEY, source_event_id INTEGER NOT NULL,
+                target_event_id INTEGER NOT NULL, relation_type TEXT NOT NULL,
+                metadata TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL,
+                UNIQUE(source_event_id, target_event_id, relation_type)
+            )""",
+            """CREATE TABLE IF NOT EXISTS decision_records (
+                id INTEGER PRIMARY KEY, workspace_id TEXT,
+                session_id TEXT, decision_type TEXT NOT NULL,
+                summary TEXT NOT NULL, evidence_citations TEXT NOT NULL DEFAULT '[]',
+                payload TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL
+            )""",
+            """CREATE TABLE IF NOT EXISTS architecture_snapshots (
+                id INTEGER PRIMARY KEY, workspace_id TEXT NOT NULL,
+                session_id TEXT, label TEXT, symbol_data TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL
+            )""",
         )
         with self.transaction() as connection:
             for statement in statements:
@@ -150,6 +167,10 @@ class KnowledgeStoreService(Service):
                 self._ensure_column(connection, table, column, definition)
             connection.execute("CREATE INDEX IF NOT EXISTS idx_events_workspace ON events(workspace_id, session_id)")
             connection.execute("CREATE INDEX IF NOT EXISTS idx_sessions_workspace ON sessions(workspace_id, started_at)")
+            connection.execute("CREATE INDEX IF NOT EXISTS idx_causal_source ON causal_edges(source_event_id)")
+            connection.execute("CREATE INDEX IF NOT EXISTS idx_causal_target ON causal_edges(target_event_id)")
+            connection.execute("CREATE INDEX IF NOT EXISTS idx_decision_workspace ON decision_records(workspace_id)")
+            connection.execute("CREATE INDEX IF NOT EXISTS idx_snapshot_workspace ON architecture_snapshots(workspace_id)")
 
     @staticmethod
     def _ensure_column(connection, table, column, definition):
@@ -417,6 +438,94 @@ class KnowledgeStoreService(Service):
                 "SELECT * FROM events ORDER BY id DESC LIMIT ?", (limit,)
             )]
 
+    def add_causal_edge(self, source_event_id, target_event_id, relation_type, metadata=None):
+        with self.transaction() as connection:
+            connection.execute(
+                """INSERT OR IGNORE INTO causal_edges(source_event_id, target_event_id, relation_type, metadata, created_at)
+                VALUES (?, ?, ?, ?, ?)""",
+                (source_event_id, target_event_id, relation_type,
+                 json.dumps(metadata or {}, ensure_ascii=False), utc_now()),
+            )
+            row = connection.execute(
+                "SELECT * FROM causal_edges WHERE source_event_id = ? AND target_event_id = ? AND relation_type = ?",
+                (source_event_id, target_event_id, relation_type),
+            ).fetchone()
+        return dict(row) if row else None
+
+    def get_causal_edges(self, event_id=None, relation_type=None):
+        clauses, parameters = [], []
+        if event_id:
+            clauses.append("(source_event_id = ? OR target_event_id = ?)")
+            parameters.extend([event_id, event_id])
+        if relation_type:
+            clauses.append("relation_type = ?")
+            parameters.append(relation_type)
+        query = "SELECT * FROM causal_edges" + (" WHERE " + " AND ".join(clauses) if clauses else "") + " ORDER BY created_at"
+        with self.transaction() as connection:
+            return [dict(row) for row in connection.execute(query, parameters)]
+
+    def add_decision_record(self, workspace_id, session_id, decision_type, summary, evidence_citations=None, payload=None):
+        with self.transaction() as connection:
+            connection.execute(
+                """INSERT INTO decision_records(workspace_id, session_id, decision_type, summary, evidence_citations, payload, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (workspace_id, session_id, decision_type, summary,
+                 json.dumps(evidence_citations or [], ensure_ascii=False),
+                 json.dumps(payload or {}, ensure_ascii=False), utc_now()),
+            )
+            return connection.execute("SELECT * FROM decision_records ORDER BY id DESC LIMIT 1").fetchone()["id"]
+
+    def list_decision_records(self, workspace_id=None, session_id=None):
+        clauses, parameters = [], []
+        if workspace_id:
+            clauses.append("workspace_id = ?"); parameters.append(workspace_id)
+        if session_id:
+            clauses.append("session_id = ?"); parameters.append(session_id)
+        query = "SELECT * FROM decision_records" + (" WHERE " + " AND ".join(clauses) if clauses else "") + " ORDER BY created_at"
+        with self.transaction() as connection:
+            rows = [dict(row) for row in connection.execute(query, parameters)]
+        for row in rows:
+            row["evidence_citations"] = json.loads(row.get("evidence_citations") or "[]")
+            row["payload"] = json.loads(row.get("payload") or "{}")
+        return rows
+
+    def save_architecture_snapshot(self, workspace_id, session_id, label, symbol_data):
+        with self.transaction() as connection:
+            connection.execute(
+                """INSERT INTO architecture_snapshots(workspace_id, session_id, label, symbol_data, created_at)
+                VALUES (?, ?, ?, ?, ?)""",
+                (workspace_id, session_id, label,
+                 json.dumps(symbol_data, ensure_ascii=False), utc_now()),
+            )
+            return connection.execute("SELECT * FROM architecture_snapshots ORDER BY id DESC LIMIT 1").fetchone()["id"]
+
+    def get_architecture_snapshot(self, snapshot_id):
+        with self.transaction() as connection:
+            row = connection.execute("SELECT * FROM architecture_snapshots WHERE id = ?", (snapshot_id,)).fetchone()
+            if not row:
+                return None
+            result = dict(row)
+            result["symbol_data"] = json.loads(result["symbol_data"])
+            return result
+
+    def list_architecture_snapshots(self, workspace_id=None, session_id=None):
+        clauses, parameters = [], []
+        if workspace_id:
+            clauses.append("workspace_id = ?"); parameters.append(workspace_id)
+        if session_id:
+            clauses.append("session_id = ?"); parameters.append(session_id)
+        query = "SELECT * FROM architecture_snapshots" + (" WHERE " + " AND ".join(clauses) if clauses else "") + " ORDER BY created_at"
+        with self.transaction() as connection:
+            rows = [dict(row) for row in connection.execute(query, parameters)]
+        for row in rows:
+            row["symbol_data"] = json.loads(row["symbol_data"])
+        return rows
+
+    def get_event_by_id(self, event_id):
+        with self.transaction() as connection:
+            row = connection.execute("SELECT * FROM events WHERE id = ?", (event_id,)).fetchone()
+        return dict(row) if row else None
+
     def statistics(self):
         with self.transaction() as connection:
             return {
@@ -428,4 +537,7 @@ class KnowledgeStoreService(Service):
                 "symbols": connection.execute("SELECT COUNT(*) FROM symbols WHERE active = 1").fetchone()[0],
                 "workspaces": connection.execute("SELECT COUNT(*) FROM workspaces WHERE status = 'active'").fetchone()[0],
                 "sessions": connection.execute("SELECT COUNT(*) FROM sessions").fetchone()[0],
+                "causal_edges": connection.execute("SELECT COUNT(*) FROM causal_edges").fetchone()[0],
+                "decision_records": connection.execute("SELECT COUNT(*) FROM decision_records").fetchone()[0],
+                "architecture_snapshots": connection.execute("SELECT COUNT(*) FROM architecture_snapshots").fetchone()[0],
             }

@@ -1,5 +1,17 @@
 # Changelog
 
+## phase10-release — 2026-07-25
+
+Phase 10 complete — Evidence-Based Cognitive Layer.
+
+- Added `CausalGraphService` for observable event relationship tracking and evidence-backed causal chains.
+- Added `ArchitectureEvolutionService` for snapshot creation, structural diff, and evolution queries.
+- Added `DecisionTrackingService` for recording explicit engineering decisions linked to workspace, session, and citations.
+- Added `CognitiveLayerService` evidence-backed explanation engine separating observed facts → derived relationships → explanations.
+- Extended SQLite schema additively with `causal_edges`, `decision_records`, `architecture_snapshots` tables, preserving all prior Phase 6–9 data.
+- Strict evidence-boundary enforcement: no hidden reasoning, intent, or undocumented motivation claimed.
+- Phase 10 release gate: 38 tests passed.
+
 ## phase9-release — 2026-07-25
 
 Phase 9 complete — Multi-Agent Observation.
