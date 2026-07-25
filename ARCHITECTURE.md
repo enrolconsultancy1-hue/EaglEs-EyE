@@ -46,6 +46,18 @@ test, and terminal results. It accepts completed command evidence from an
 observer and sends it through `EngineeringEvidenceService`; it never spawns a
 process or alters a watched workspace.
 
+## Phase 8.1 workspace identity foundation
+
+`WorkspaceObserverService` is a registration-only foundation for multiple
+isolated workspaces. It assigns deterministic IDs from normalized paths and
+persists workspace metadata through `KnowledgeStoreService`; it does not alter
+or replace the existing single-workspace `WatcherService` API.
+
+SQLite now has additive `workspaces` and reserved `sessions` tables, plus
+nullable `workspace_id` and `session_id` columns on events. Existing events
+remain unchanged and valid; future phases may attach identity only when there
+is explicit observable evidence.
+
 `KnowledgeIndexerService` receives filesystem events through a queue and one
 worker. It safely skips text extraction for binary, malformed, or oversized
 files while preserving metadata. `RetrievalService` supplies a stable lexical

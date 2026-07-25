@@ -83,6 +83,17 @@ class KnowledgeStoreService(Service):
                 id INTEGER PRIMARY KEY, event_type TEXT NOT NULL, path TEXT,
                 payload TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL
             )""",
+            """CREATE TABLE IF NOT EXISTS workspaces (
+                id TEXT PRIMARY KEY, path TEXT NOT NULL UNIQUE,
+                status TEXT NOT NULL DEFAULT 'active', metadata TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+            )""",
+            """CREATE TABLE IF NOT EXISTS sessions (
+                id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'active', metadata TEXT NOT NULL DEFAULT '{}',
+                started_at TEXT NOT NULL, ended_at TEXT,
+                FOREIGN KEY(workspace_id) REFERENCES workspaces(id)
+            )""",
             """CREATE TABLE IF NOT EXISTS observations (
                 id INTEGER PRIMARY KEY, document_id INTEGER, kind TEXT NOT NULL,
                 payload TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL,
@@ -133,8 +144,12 @@ class KnowledgeStoreService(Service):
                 ("module", "TEXT"), ("parent_symbol", "TEXT"),
                 ("docstring", "TEXT"), ("visibility", "TEXT"),
                 ("line_start", "INTEGER"), ("line_end", "INTEGER"),
+                ("workspace_id", "TEXT"), ("session_id", "TEXT"),
             ):
-                self._ensure_column(connection, "symbols", column, definition)
+                table = "events" if column in ("workspace_id", "session_id") else "symbols"
+                self._ensure_column(connection, table, column, definition)
+            connection.execute("CREATE INDEX IF NOT EXISTS idx_events_workspace ON events(workspace_id, session_id)")
+            connection.execute("CREATE INDEX IF NOT EXISTS idx_sessions_workspace ON sessions(workspace_id, started_at)")
 
     @staticmethod
     def _ensure_column(connection, table, column, definition):
@@ -219,12 +234,53 @@ class KnowledgeStoreService(Service):
                  for item in chunks],
             )
 
-    def record_event(self, event_type, path, payload):
+    def record_event(self, event_type, path, payload, workspace_id=None, session_id=None):
         with self.transaction() as connection:
             connection.execute(
-                "INSERT INTO events(event_type, path, payload, created_at) VALUES (?, ?, ?, ?)",
-                (event_type, path, json.dumps(payload or {}, ensure_ascii=False), utc_now()),
+                """INSERT INTO events(event_type, path, payload, created_at, workspace_id, session_id)
+                VALUES (?, ?, ?, ?, ?, ?)""",
+                (event_type, path, json.dumps(payload or {}, ensure_ascii=False), utc_now(), workspace_id, session_id),
             )
+
+    def upsert_workspace(self, workspace_id, path, metadata=None, status="active"):
+        now = utc_now()
+        metadata_json = json.dumps(metadata or {}, ensure_ascii=False, sort_keys=True)
+        with self.transaction() as connection:
+            connection.execute(
+                """INSERT INTO workspaces(id, path, status, metadata, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET path=excluded.path, status=excluded.status,
+                metadata=excluded.metadata, updated_at=excluded.updated_at""",
+                (workspace_id, path, status, metadata_json, now, now),
+            )
+            row = connection.execute("SELECT * FROM workspaces WHERE id = ?", (workspace_id,)).fetchone()
+        return self._workspace_row(row)
+
+    def set_workspace_status(self, workspace_id, status):
+        with self.transaction() as connection:
+            connection.execute(
+                "UPDATE workspaces SET status = ?, updated_at = ? WHERE id = ?",
+                (status, utc_now(), workspace_id),
+            )
+            row = connection.execute("SELECT * FROM workspaces WHERE id = ?", (workspace_id,)).fetchone()
+        return self._workspace_row(row) if row else None
+
+    def list_workspaces(self, include_inactive=True):
+        query = "SELECT * FROM workspaces"
+        parameters = ()
+        if not include_inactive:
+            query += " WHERE status = ?"
+            parameters = ("active",)
+        query += " ORDER BY path"
+        with self.transaction() as connection:
+            rows = [self._workspace_row(row) for row in connection.execute(query, parameters)]
+        return rows
+
+    @staticmethod
+    def _workspace_row(row):
+        result = dict(row)
+        result["metadata"] = json.loads(result["metadata"] or "{}")
+        return result
 
     def record_reflection(self, summary, payload):
         with self.transaction() as connection:
@@ -313,4 +369,6 @@ class KnowledgeStoreService(Service):
                 "reflections": connection.execute("SELECT COUNT(*) FROM reflections").fetchone()[0],
                 "relationships": connection.execute("SELECT COUNT(*) FROM relationships").fetchone()[0],
                 "symbols": connection.execute("SELECT COUNT(*) FROM symbols WHERE active = 1").fetchone()[0],
+                "workspaces": connection.execute("SELECT COUNT(*) FROM workspaces WHERE status = 'active'").fetchone()[0],
+                "sessions": connection.execute("SELECT COUNT(*) FROM sessions").fetchone()[0],
             }

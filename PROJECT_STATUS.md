@@ -2,8 +2,7 @@
 
 ## Current Phase
 
-Phase 7 — Reliability, Project Intelligence, and Software Understanding is
-complete.
+Phase 8 — AI Twin Observer Foundation is in progress.
 
 ---
 
@@ -20,6 +19,17 @@ and engineering evidence.
 ---
 
 # Completed Foundations
+
+## Phase 8.1 — Workspace Identity Foundation
+
+Completed:
+
+- Additive SQLite workspace and reserved-session identity storage.
+- Nullable workspace/session fields on new and existing event schemas without
+  rewriting prior event history.
+- Deterministic, isolated multi-workspace registration through
+  `WorkspaceObserverService`.
+- Preserved single-workspace watcher behavior and existing event APIs.
 
 ## Phase 6 — Semantic Memory Foundation
 
@@ -98,9 +108,8 @@ Completed:
 
 # Latest Measurements
 
-The targeted 10-test Phase 6–7 regression suite completed in:
-7.12 seconds
-BENCHMARKS.md
+The Phase 8.1 checkpoint regression suite completed 26 tests in 10.34 seconds.
+See `BENCHMARKS.md` for recorded measurements.
 
 Line coverage remains pending installation of the declared development-only
 `coverage` dependency.
@@ -173,7 +182,8 @@ engineering evidence.
 Current Focus:
 
 - Phase 7 release recorded as `phase7-release`.
-- Awaiting explicit authorization to begin Phase 8.
+- Phase 8.1 workspace identity foundation is complete.
+- Awaiting Phase 8.2 authorization after the checkpoint.
 
 ---
 
