@@ -1,5 +1,16 @@
 # Changelog
 
+## phase11-release — 2026-07-25
+
+Phase 11 complete — MCP Ecosystem.
+
+- Added `src/mcp/` package with stdio JSON-RPC 2.0 transport (`transport_stdio.py`), localhost-only TCP transport (`transport_tcp.py`, disabled by default), tool registry (`tool_registry.py`), and MCP protocol server (`mcp_server.py`).
+- Full MCP protocol support: initialize handshake, tools/list, tools/call with structured JSON-RPC 2.0 error codes.
+- Expanded `MCPToolService` with 5 Phase 10 evidence tools: `explain_change`, `get_causal_chain`, `compare_snapshots`, `list_decisions`, `get_decision`.
+- Preserved all 6 legacy Phase 6–9 tools with full backward compatibility.
+- Security boundary: MCP disabled by default, TCP localhost-only, no process/workspace mutation.
+- Phase 11 release gate: 37 Phase 11 tests passed; 77 total (79 total with 2 pre-existing watchdog exclusions).
+
 ## phase10-release — 2026-07-25
 
 Phase 10 complete — Evidence-Based Cognitive Layer.

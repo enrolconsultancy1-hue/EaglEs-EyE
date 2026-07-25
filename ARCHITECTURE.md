@@ -223,6 +223,92 @@ coordinates three subordinate services:
 All three services are additive: they extend the Phase 6 SQLite schema without
 modifying prior tables or breaking existing Phase 6–9 APIs.
 
+## Phase 11 MCP ecosystem
+
+Phase 11 transforms EaglEs EyE from a local-process library into a
+network-accessible MCP-compatible server while preserving all existing
+boundaries.
+
+The architecture follows a strict layered hierarchy:
+
+```
+External MCP Client
+        ↓
+   MCP Transport
+        ↓
+  Tool Registry
+        ↓
+  MCPToolService
+        ↓
+ Existing Services
+        ↓
+  Evidence Store
+```
+
+### Transport layer
+
+`src/mcp/` provides three transport modules:
+
+- **`transport_stdio.py`** — line-delimited JSON-RPC 2.0 over stdin/stdout.
+  Read-only by default; no network exposure.
+- **`transport_tcp.py`** — optional TCP socket server bound to `127.0.0.1`
+  only. Disabled by default; requires explicit `mcp.tcp.enabled: true`
+  configuration to activate.
+- **`mcp_server.py`** — `MCPServer` class handling the `initialize`,
+  `tools/list`, and `tools/call` MCP protocol methods with JSON-RPC 2.0
+  structured error codes (-32700, -32600, -32601, -32602, -32603, -32000).
+
+### Tool registry
+
+`ToolRegistry` provides a decorator-based registration system with:
+
+- Tool name, description, and JSON Schema input annotations.
+- `list_tools()` returning MCP-compliant tool metadata.
+- `call_tool()` dispatching to registered functions with argument validation.
+- Future plugin extension point (no uncontrolled execution plugins).
+
+### MCPToolService expansion
+
+`MCPToolService` preserves all existing Phase 6–9 tools (`search_memory`,
+`build_context`, `get_document`, `get_recent_events`, `reindex_memory`,
+`cross_reference`) and adds five Phase 10 evidence tools:
+
+- `explain_change` — evidence-backed explanation for entity changes via
+  `CognitiveLayerService`.
+- `get_causal_chain` — trace causal chains forward/backward from an event via
+  `CausalGraphService`.
+- `compare_snapshots` — structural diff between architecture snapshots via
+  `ArchitectureEvolutionService`.
+- `list_decisions` — engineering decision records filtered by workspace or
+  session via `DecisionTrackingService`.
+- `get_decision` — single decision record by ID via `DecisionTrackingService`.
+
+All tools return structured data with evidence citations and observable facts
+only.
+
+### Security boundaries
+
+- MCP server is **disabled by default** (`mcp.enabled: false`).
+- Write tools (`reindex_memory`) require explicit opt-in config flag.
+- No MCP tool may spawn processes, execute shell commands, edit workspace
+  files, stage commits, or alter repositories.
+- TCP transport is **localhost-only** when enabled; authentication required
+  before remote access.
+- `EyeKernel`, `EventBus`, and all service boundaries remain unchanged. The
+  MCP layer is a transport facade, not a kernel replacement.
+
+### Integration test
+
+Run the MCP server via:
+
+    EAGLE_EYE_MEMORY_PATH=/tmp/eye python -m mcp.mcp_server
+
+Then send JSON-RPC 2.0 messages over stdin:
+
+    {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26"}}
+    {"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}
+    {"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"search_memory","arguments":{"query":"RetrievalService"}}}
+
 ## Boundaries
 
 `ReasoningService` only prepares evidence and proposals; it cannot execute

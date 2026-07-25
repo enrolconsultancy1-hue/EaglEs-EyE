@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 10 — Evidence-Based Cognitive Layer is complete.
+Phase 11 — MCP Ecosystem is complete.
 
 ---
 
@@ -19,6 +19,20 @@ and engineering evidence.
 ---
 
 # Completed Foundations
+
+## Phase 11 — MCP Ecosystem
+
+Completed:
+
+- `src/mcp/` package with JSON-RPC 2.0 stdio transport (`transport_stdio.py`), localhost-only TCP transport (`transport_tcp.py`, disabled by default), tool registry (`tool_registry.py`), and MCP protocol server (`mcp_server.py`).
+- Full MCP protocol support: initialize handshake, tools/list, tools/call with structured error codes (-32700, -32600, -32601, -32602, -32603, -32000).
+- `MCPToolService` expanded with 5 Phase 10 evidence tools: `explain_change`, `get_causal_chain`, `compare_snapshots`, `list_decisions`, `get_decision` — all returning structured data with evidence citations.
+- All 6 legacy Phase 6–9 tools (`search_memory`, `build_context`, `get_document`, `get_recent_events`, `reindex_memory`, `cross_reference`) preserved with full backward compatibility.
+- `ToolRegistry` with decorator-based registration and JSON Schema input annotations.
+- `build_mcp_kernel()` bootstrap function for programmatic MCP server startup.
+- Security boundary: MCP disabled by default (`mcp.enabled: false`), TCP localhost-only, no process/workspace mutation allowed.
+- Comprehensive Phase 11 test suite: 37 tests covering protocol handshake, tool listing, tool calls, invalid methods, malformed JSON, legacy compatibility, Phase 10 tool exposure, transport lifecycle, and security defaults.
+- No EyeKernel, EventBus, Service boundary, or Phase 6–10 data modified.
 
 ## Phase 10 — Evidence-Based Cognitive Layer
 
@@ -137,7 +151,8 @@ Completed:
 
 # Latest Measurements
 
-The Phase 10 release-gate regression suite completed 38 tests in 14.42 seconds.
+The Phase 11 release-gate regression suite completed 77 tests in 12.82 seconds
+(79 total with 2 pre-existing watchdog-dependent exclusions).
 See `BENCHMARKS.md` for recorded measurements.
 
 Line coverage remains pending installation of the declared development-only
@@ -157,8 +172,6 @@ Line coverage remains pending installation of the declared development-only
 - Embeddings are not yet production enabled.
 
 - Vector search is deferred.
-
-- Network MCP server implementation is deferred.
 
 ---
 
@@ -214,7 +227,8 @@ Current Focus:
 - Phase 8 release recorded as `phase8-release`.
 - Phase 9 release recorded as `phase9-release`.
 - Phase 10 release recorded as `phase10-release`.
-- Awaiting explicit authorization to begin Phase 11.
+- Phase 11 release recorded as `phase11-release`.
+- Awaiting explicit authorization to begin Phase 12.
 
 ---
 
@@ -239,8 +253,8 @@ No implementation decision should override higher-level governance documents.
 
 # Next Milestone
 
-Before Phase 11:
+Before Phase 12:
 
-- Phase 10 milestone gates have passed: tests, documentation, architecture, and
+- Phase 11 milestone gates have passed: tests, documentation, architecture, and
   release record are complete.
-- Await explicit authorization before beginning Phase 11.
+- Await explicit authorization before beginning Phase 12.
