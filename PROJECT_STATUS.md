@@ -2,8 +2,8 @@
 
 ## Current Phase
 
-Phase 7 — Reliability, Project Intelligence, and Software Understanding is in
-progress.
+Phase 7 — Reliability, Project Intelligence, and Software Understanding is
+complete.
 
 ---
 
@@ -91,6 +91,9 @@ Completed:
 
 - Non-repository paths are reported without creating events.
 
+- Passive adapters for externally observed build, test, and terminal results.
+  They record supplied command evidence only and never execute commands.
+
 ---
 
 # Latest Measurements
@@ -159,7 +162,7 @@ phase-6-complete
 
 Status:
 
-IN PROGRESS
+COMPLETE
 
 Phase Goal:
 
@@ -169,10 +172,8 @@ engineering evidence.
 
 Current Focus:
 
-- Reliability improvements.
-- Deeper software understanding.
-- Engineering intelligence.
-- Controlled expansion toward advanced AI Twin capabilities.
+- Phase 7 release recorded as `phase7-release`.
+- Awaiting explicit authorization to begin Phase 8.
 
 ---
 
@@ -199,8 +200,6 @@ No implementation decision should override higher-level governance documents.
 
 Before Phase 8:
 
-- Complete Phase 7 milestone gates.
-- Review architecture.
-- Update roadmap.
-- Update documentation.
-- Confirm readiness for advanced AI Twin intelligence capabilities.
+- Phase 7 milestone gates have passed: tests, documentation, architecture, and
+  release record are complete.
+- Await explicit authorization before beginning Phase 8.

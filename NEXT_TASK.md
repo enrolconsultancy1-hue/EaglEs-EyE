@@ -1,5 +1,4 @@
 # Next Task
 
-Add passive adapters for externally observed build, test, and terminal activity,
-following the Git observer pattern. Preserve the passive observer boundary and
-keep every replay step backed by explicit evidence.
+Phase 7 is complete and released as `phase7-release`. Stop here and wait for
+explicit authorization before beginning Phase 8 — AI Twin Observer Foundation.

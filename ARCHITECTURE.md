@@ -41,6 +41,11 @@ read-only status, branch, and revision queries, then records the resulting
 facts through `EngineeringEvidenceService`; it never stages, commits, or edits
 repository state.
 
+`ProcessObserverService` is the passive adapter for externally observed build,
+test, and terminal results. It accepts completed command evidence from an
+observer and sends it through `EngineeringEvidenceService`; it never spawns a
+process or alters a watched workspace.
+
 `KnowledgeIndexerService` receives filesystem events through a queue and one
 worker. It safely skips text extraction for binary, malformed, or oversized
 files while preserving metadata. `RetrievalService` supplies a stable lexical

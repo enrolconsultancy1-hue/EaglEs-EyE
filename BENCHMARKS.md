@@ -9,6 +9,8 @@ Measured on the local Windows development environment using Python 3.14:
 | Project indexing | 500 generated Python modules indexed with symbols in under 30 seconds (asserted by test) |
 | Controlled EaglEs EyE workspace pass (2026-07-25) | 86 files, 2,058 chunks, 617 symbols, and 1,258 relationships indexed into a temporary SQLite store |
 | Targeted Phase 7 regression suite (2026-07-25) | 13 tests passed in 6.24 seconds |
+| Targeted Phase 7 regression suite after passive observer adapters (2026-07-25) | 22 tests passed in 9.61 seconds |
+| Phase 7 release-gate regression suite (2026-07-25) | 23 tests passed in 9.92 seconds |
 
 The SQLite store uses WAL mode, `synchronous=NORMAL`, foreign-key enforcement,
 and a 5-second busy timeout. This keeps queued indexing practical while each
