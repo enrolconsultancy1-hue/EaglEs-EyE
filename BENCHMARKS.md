@@ -13,6 +13,7 @@ Measured on the local Windows development environment using Python 3.14:
 | Phase 7 release-gate regression suite (2026-07-25) | 23 tests passed in 9.92 seconds |
 | Phase 8.1 workspace identity checkpoint (2026-07-25) | 26 tests passed in 10.34 seconds |
 | Phase 8 release-gate regression suite (2026-07-25) | 28 tests passed in 10.88 seconds |
+| Phase 9 release-gate regression suite (2026-07-25) | 31 tests passed in 13.32 seconds |
 
 The SQLite store uses WAL mode, `synchronous=NORMAL`, foreign-key enforcement,
 and a 5-second busy timeout. This keeps queued indexing practical while each

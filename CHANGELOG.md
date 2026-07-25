@@ -1,5 +1,16 @@
 # Changelog
 
+## phase9-release — 2026-07-25
+
+Phase 9 complete — Multi-Agent Observation.
+
+- Added `MultiAgentObservationService` to watch and compare multiple coding agents simultaneously.
+- Added comprehensive comparison APIs across 5 distinct dimensions: Session, Agent, Timeline, Performance, and Architecture.
+- Aligned multi-session timelines side-by-side to compare sequential agent actions sequentially.
+- Expanded visible-marker-only agent detection within `AgentDetectorService` to support Codex, Claude Code, Gemini CLI, OpenCode, Aider, Cursor, Cline, Roo Code, Windsurf, GitHub Copilot, and future MCP agents.
+- Fully preserved backward compatibility, SQLite data, and evidence-only boundaries.
+- Phase 9 release gate: 31 tests passed.
+
 ## phase8-release — 2026-07-25
 
 Phase 8 complete — AI Twin Observer Foundation.

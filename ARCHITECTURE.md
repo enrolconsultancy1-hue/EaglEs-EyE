@@ -68,7 +68,22 @@ orders that evidence by timestamp and event ID within a workspace or session.
 `events.json`, and `summary.json` artifacts under the configured Twin directory.
 `ReplayService` replays those persisted citations without adding explanations
 that the evidence does not support. `AgentDetectorService` classifies only
-visible workspace markers and returns the marker paths as its evidence.
+visible workspace markers (supporting Codex, Claude Code, Gemini CLI, OpenCode,
+Aider, Cursor, Cline, Roo Code, Windsurf, GitHub Copilot, and future MCP agents)
+and returns the marker paths as its evidence.
+
+## Phase 9 multi-agent observation
+
+`MultiAgentObservationService` watches and compares multiple coding agents
+simultaneously using observable event data, session metadata, and workspace
+markers. It provides comprehensive comparison APIs across five distinct dimensions:
+1. **Session Comparison:** Analyzes session metadata, durations, files touched, and event compositions.
+2. **Agent Comparison:** Maps agent detections side-by-side with associated workspace and session contexts.
+3. **Timeline Comparison:** Aligns multi-session timelines side-by-side sequentially.
+4. **Performance Comparison:** Tallies and compares execution duration, event rates, and test success/failure outcomes.
+5. **Architecture Comparison:** Examines the structural impact (specifically file paths and event type touchpoints) of each agent's active sessions.
+
+It maintains strict compliance with evidence-only boundaries and does not infer hidden reasoning.
 
 `KnowledgeIndexerService` receives filesystem events through a queue and one
 worker. It safely skips text extraction for binary, malformed, or oversized

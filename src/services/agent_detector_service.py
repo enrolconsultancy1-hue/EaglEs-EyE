@@ -6,7 +6,19 @@ from services.service import Service
 
 
 class AgentDetectorService(Service):
-    MARKERS = {"Codex": (".codex", "AGENTS.md"), "Claude Code": (".claude",), "Aider": (".aider", ".aider.conf.yml"), "Cursor": (".cursor",), "Cline": (".cline",), "Roo Code": (".roo",)}
+    MARKERS = {
+        "Codex": (".codex", "AGENTS.md"),
+        "Claude Code": (".claude",),
+        "Gemini CLI": (".gemini",),
+        "OpenCode": (".opencode",),
+        "Aider": (".aider", ".aider.conf.yml"),
+        "Cursor": (".cursor",),
+        "Cline": (".cline",),
+        "Roo Code": (".roo",),
+        "Windsurf": (".windsurf",),
+        "GitHub Copilot": (".github", ".copilot"),
+        "MCP Agents": (".mcp",),
+    }
 
     def detect(self, workspace):
         workspace = os.path.abspath(workspace); detected = []

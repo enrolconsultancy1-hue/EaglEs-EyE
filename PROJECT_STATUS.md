@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 8 — AI Twin Observer Foundation is complete.
+Phase 9 — Multi-Agent Observation is complete.
 
 ---
 
@@ -19,6 +19,18 @@ and engineering evidence.
 ---
 
 # Completed Foundations
+
+## Phase 9 — Multi-Agent Observation
+
+Completed:
+
+- Multi-agent comparison system (`MultiAgentObservationService`) to observe and evaluate multiple coding agents simultaneously.
+- Five distinct comparison dimensions: Session, Agent, Timeline, Performance, and Architecture.
+- Alignment of multi-session event histories sequentially for side-by-side comparison.
+- Multi-agent performance tracking (durations, event rates, build/test counts) and architectural impact comparisons.
+- Robust expansion of visible marker detection within `AgentDetectorService` supporting Codex, Claude Code, Gemini CLI, OpenCode, Aider, Cursor, Cline, Roo Code, Windsurf, GitHub Copilot, and future MCP agents.
+- Strict preservation of backward compatibility and evidence-only boundaries without inferring hidden reasoning.
+- Targeted multi-agent regression suite verifying comparison APIs and marker detection.
 
 ## Phase 8.1 — Workspace Identity Foundation
 
@@ -187,9 +199,9 @@ engineering evidence.
 Current Focus:
 
 - Phase 7 release recorded as `phase7-release`.
-- Phase 8.1 workspace identity foundation is complete.
 - Phase 8 release recorded as `phase8-release`.
-- Awaiting explicit authorization to begin Phase 9.
+- Phase 9 release recorded as `phase9-release`.
+- Awaiting explicit authorization to begin Phase 10.
 
 ---
 
@@ -214,8 +226,8 @@ No implementation decision should override higher-level governance documents.
 
 # Next Milestone
 
-Before Phase 9:
+Before Phase 10:
 
-- Phase 8 milestone gates have passed: tests, documentation, architecture, and
+- Phase 9 milestone gates have passed: tests, documentation, architecture, and
   release record are complete.
-- Await explicit authorization before beginning Phase 9.
+- Await explicit authorization before beginning Phase 10.

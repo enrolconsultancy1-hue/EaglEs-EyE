@@ -19,7 +19,15 @@ class StressTests(unittest.TestCase):
                 with open(path, "w", encoding="utf-8") as file: file.write("updated reliability content")
                 harness.indexer.reindex_path(path)
             for path in paths[::5]:
-                os.remove(path)
+                for retry in range(5):
+                    try:
+                        os.remove(path)
+                        break
+                    except PermissionError:
+                        import time
+                        time.sleep(0.05)
+                else:
+                    os.remove(path) # final attempt to raise the exception if it still fails
                 harness.indexer.enqueue({"path": path, "event_type": "FILE_DELETED"})
             harness.indexer.wait_until_idle()
             self.assertEqual(harness.store.statistics()["documents"], 200)
