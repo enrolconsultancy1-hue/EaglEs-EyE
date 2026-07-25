@@ -11,6 +11,8 @@ class KnowledgeIndexerService(Service):
     """Queues filesystem events and incrementally creates versioned records."""
 
     TEXT_EXTENSIONS = {".txt", ".md", ".py", ".js", ".json", ".yaml", ".yml", ".csv"}
+    DEFAULT_IGNORED_DIRECTORIES = {".git", ".venv", "venv", "__pycache__", "node_modules"}
+    DEFAULT_IGNORED_FILENAMES = {"knowledge.db", "knowledge.db-shm", "knowledge.db-wal"}
 
     def __init__(self, kernel):
         super().__init__(kernel)
@@ -61,6 +63,28 @@ class KnowledgeIndexerService(Service):
     def reindex_path(self, path):
         self.tasks.put({"path": os.path.abspath(path), "event_type": "REINDEX"})
 
+    def reindex_workspace(self, root, ignored_directories=None):
+        """Queue a deterministic, passive indexing pass for an existing workspace.
+
+        The method only reads files and reuses the normal event-backed indexing
+        pipeline, preserving document versions and graph analysis behavior.
+        """
+        workspace = os.path.abspath(root)
+        if not os.path.isdir(workspace):
+            raise ValueError("Workspace path must be an existing directory: %s" % workspace)
+        ignored = set(ignored_directories or self.DEFAULT_IGNORED_DIRECTORIES)
+        paths = []
+        for current_root, directories, filenames in os.walk(workspace):
+            directories[:] = sorted(directory for directory in directories if directory not in ignored)
+            for filename in sorted(filenames):
+                if filename in self.DEFAULT_IGNORED_FILENAMES:
+                    continue
+                paths.append(os.path.join(current_root, filename))
+        for path in paths:
+            self.tasks.put({"path": path, "event_type": "REINDEX"})
+        self.tasks.put({"path": workspace, "event_type": "RESOLVE_IMPORTS"})
+        return {"workspace": workspace, "queued_files": len(paths), "ignored_directories": sorted(ignored)}
+
     def _run(self):
         while self.running:
             data = self.tasks.get()
@@ -77,6 +101,10 @@ class KnowledgeIndexerService(Service):
         path = os.path.abspath(data.get("path", ""))
         event_type = data.get("event_type", "FILE_MODIFIED")
         if not path:
+            return
+        if event_type == "RESOLVE_IMPORTS":
+            if self.graph:
+                self.graph.resolve_workspace_imports(path)
             return
         self.store.record_event(event_type, path, data)
         if event_type == "FILE_DELETED" or not os.path.exists(path):

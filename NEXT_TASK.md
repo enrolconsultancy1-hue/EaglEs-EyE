@@ -1,5 +1,5 @@
 # Next Task
 
-Run controlled repository-wide indexing against a real project and record graph
-quality/coverage in CI. Next, improve static name resolution across packages and
-add pluggable hybrid retrieval before beginning Phase 8 autonomous planning.
+Add passive adapters for externally observed build, test, and terminal activity,
+following the Git observer pattern. Preserve the passive observer boundary and
+keep every replay step backed by explicit evidence.

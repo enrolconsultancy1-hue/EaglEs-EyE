@@ -7,10 +7,21 @@ Measured on the local Windows development environment using Python 3.14:
 | Targeted Phase 6–7 suite | 10 tests passed in 7.12 seconds |
 | Stress lifecycle workload | 250 creates, 125 modifications, and 50 deletes; SQLite integrity remained `ok` |
 | Project indexing | 500 generated Python modules indexed with symbols in under 30 seconds (asserted by test) |
+| Controlled EaglEs EyE workspace pass (2026-07-25) | 86 files, 2,058 chunks, 617 symbols, and 1,258 relationships indexed into a temporary SQLite store |
+| Targeted Phase 7 regression suite (2026-07-25) | 13 tests passed in 6.24 seconds |
 
 The SQLite store uses WAL mode, `synchronous=NORMAL`, foreign-key enforcement,
 and a 5-second busy timeout. This keeps queued indexing practical while each
 individual transaction remains atomic.
+
+## Repository quality baseline
+
+The controlled workspace pass excludes `.git`, virtual environments,
+`__pycache__`, `node_modules`, and EaglEs EyE's generated SQLite files. The
+pass is read-only with respect to the observed workspace; its index was stored
+in a temporary directory. Documentation linkage was **44.0%** (11 linked
+services, 14 not yet linked) and no circular dependencies were found. These are
+observable baseline measurements, not inferred architecture claims.
 
 ## Coverage
 

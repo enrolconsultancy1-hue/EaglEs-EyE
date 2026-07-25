@@ -1,5 +1,10 @@
 # EaglEs EyE Architecture
 
+The architecture is governed by the
+[AI Twin Observer Constitution](AI_TWIN_CONSTITUTION.md): observation is
+passive, conclusions are evidence-backed, and services are extended without
+breaking compatibility.
+
 EaglEs EyE is an event-driven kernel. `EyeKernel` owns service registration and
 the synchronous `EventBus`; the watcher publishes filesystem lifecycle events.
 Services initialize configuration-dependent runtime state in `start()`, after
@@ -17,6 +22,24 @@ and imports legacy `knowledge.json` once without deleting or rewriting it.
 observations, embeddings, reflections, retrieval logs, relationships, and
 symbols. Document and chunk versions are append-preserving: prior chunks become
 inactive rather than being erased. SQLite transactions guard each update.
+
+`TimelineService` reconstructs ordered, cited timelines and bounded session
+summaries directly from the durable event log. It is read-only: summaries state
+only observable event counts, paths, timestamps, and evidence citations.
+
+`SessionReconstructionService` turns a bounded timeline into a replay sequence
+with one citation per observed step. It explicitly preserves the limits of the
+evidence rather than filling gaps with inferred activity or reasoning.
+
+`EngineeringEvidenceService` is the passive intake boundary for Git, build,
+test, and terminal observations. It records caller-supplied evidence into the
+same durable event log; it never executes commands or modifies the watched
+workspace.
+
+`GitObserverService` is the first observer adapter. It invokes only Git's
+read-only status, branch, and revision queries, then records the resulting
+facts through `EngineeringEvidenceService`; it never stages, commits, or edits
+repository state.
 
 `KnowledgeIndexerService` receives filesystem events through a queue and one
 worker. It safely skips text extraction for binary, malformed, or oversized
@@ -37,6 +60,11 @@ and read-only.
 parent symbol, source spans, docstrings, visibility, signatures, and stable
 SQLite symbol IDs. Architecture and documentation analyzers persist health and
 coverage observations as reflections.
+
+After a controlled workspace pass, `KnowledgeGraphService` conservatively
+resolves local Python package imports. The original import target remains the
+graph fact; a resolved document path is supplementary evidence in relationship
+metadata.
 
 ## Boundaries
 

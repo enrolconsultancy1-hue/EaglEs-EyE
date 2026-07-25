@@ -19,6 +19,17 @@ Completed foundations:
 - Reliability regression suites for stress activity, restart persistence,
   binary/oversized files, rollback integrity, import graphs, retrieval quality,
   large repositories, and cross references.
+- Deterministic workspace-wide indexing through the existing event-backed,
+  version-preserving pipeline; VCS and runtime directories are excluded by
+  default.
+- Evidence-only timeline and session-summary APIs over the durable event log;
+  they report citations and never attribute hidden agent reasoning.
+- Replayable session reconstruction that produces one cited step per recorded
+  event and explicitly states evidence limitations.
+- Passive engineering-evidence intake for explicitly observed Git, build, test,
+  and terminal records; it does not run commands or change watched workspaces.
+- Read-only Git observer adapter for branch, revision, and porcelain-status
+  evidence; non-repository paths are reported without creating an event.
 
 Latest measured result: the targeted 10-test Phase 6–7 suite completed in
 7.12 seconds. See `BENCHMARKS.md`; line coverage awaits installation of the

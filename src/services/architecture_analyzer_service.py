@@ -32,7 +32,7 @@ class ArchitectureAnalyzerService(Service):
                 found.append(trail[trail.index(node):]); return
             if node in visited: return
             visiting.add(node)
-            for target in graph[node]: walk(target, trail + [target])
+            for target in graph.get(node, ()): walk(target, trail + [target])
             visiting.remove(node); visited.add(node)
-        for node in graph: walk(node, [node])
+        for node in list(graph): walk(node, [node])
         return found

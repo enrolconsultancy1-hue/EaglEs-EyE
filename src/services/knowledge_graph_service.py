@@ -5,6 +5,7 @@ stored as named graph targets rather than guessed filesystem paths.
 """
 
 import ast
+import json
 import os
 
 from services.service import Service
@@ -83,6 +84,78 @@ class KnowledgeGraphService(Service):
             )]
         return {"symbols": symbols, "relationships": relationships}
 
+    def resolve_workspace_imports(self, workspace):
+        """Attach local-document evidence to imports after a complete index pass.
+
+        Original import targets are retained. Resolution is only recorded when a
+        target maps exactly to an indexed Python module within the workspace.
+        """
+        workspace = os.path.abspath(workspace)
+        with self.store.transaction() as connection:
+            documents = [dict(row) for row in connection.execute(
+                "SELECT id, path FROM documents WHERE status = 'active' AND path LIKE ?",
+                (workspace + "%",),
+            )]
+            relationships = [dict(row) for row in connection.execute(
+                """SELECT relationships.id, documents.path AS source_path,
+                   relationships.target_path, relationships.metadata
+                   FROM relationships JOIN documents ON documents.id = relationships.source_document_id
+                   WHERE relationships.relation = 'imports' AND documents.path LIKE ?""",
+                (workspace + "%",),
+            )]
+            modules = self._workspace_modules(workspace, documents)
+            for relationship in relationships:
+                metadata = json.loads(relationship["metadata"] or "{}")
+                resolved = self._resolve_import(modules, relationship["source_path"], metadata)
+                if resolved:
+                    metadata["resolved_document_path"] = resolved[1]
+                    metadata["resolved_module"] = resolved[0]
+                    metadata["resolution"] = "local"
+                else:
+                    metadata.pop("resolved_document_path", None)
+                    metadata.pop("resolved_module", None)
+                    metadata["resolution"] = "unresolved"
+                connection.execute(
+                    "UPDATE relationships SET metadata = ? WHERE id = ?",
+                    (json.dumps(metadata, ensure_ascii=False, sort_keys=True), relationship["id"]),
+                )
+
+    @staticmethod
+    def _workspace_modules(workspace, documents):
+        modules = {}
+        for document in documents:
+            path = document["path"]
+            if not path.endswith(".py"):
+                continue
+            relative = os.path.relpath(path, workspace)
+            parts = relative.split(os.sep)
+            filename = parts.pop()
+            if filename == "__init__.py":
+                module_parts = parts
+            else:
+                module_parts = parts + [os.path.splitext(filename)[0]]
+            if module_parts:
+                modules[".".join(module_parts)] = path
+        return modules
+
+    @staticmethod
+    def _resolve_import(modules, source_path, metadata):
+        source_module = next((name for name, path in modules.items() if path == source_path), "")
+        source_parts = source_module.split(".") if source_module else []
+        if not source_path.endswith("__init__.py") and source_parts:
+            source_parts.pop()
+        level = int(metadata.get("relative", 0) or 0)
+        if level:
+            source_parts = source_parts[:max(0, len(source_parts) - level + 1)]
+        base = metadata.get("module", "")
+        imported = metadata.get("imported_name", "")
+        prefix = ".".join(part for part in [".".join(source_parts), base] if part)
+        candidates = [".".join(part for part in [prefix, imported] if part), prefix]
+        for candidate in candidates:
+            if candidate in modules:
+                return candidate, modules[candidate]
+        return None
+
 
 class _ProjectVisitor(ast.NodeVisitor):
     def __init__(self):
@@ -103,13 +176,19 @@ class _ProjectVisitor(ast.NodeVisitor):
 
     def visit_Import(self, node):
         for alias in node.names:
-            self.relationships.append((alias.name, "imports", {"line": node.lineno}))
+            self.relationships.append((alias.name, "imports", {
+                "line": node.lineno, "module": alias.name, "imported_name": "",
+                "relative": 0,
+            }))
 
     def visit_ImportFrom(self, node):
         module = node.module or ""
         for alias in node.names:
             target = module + ("." if module else "") + alias.name
-            self.relationships.append((target, "imports", {"line": node.lineno, "relative": node.level}))
+            self.relationships.append((target, "imports", {
+                "line": node.lineno, "module": module, "imported_name": alias.name,
+                "relative": node.level,
+            }))
 
     def visit_ClassDef(self, node):
         decorators = [self._expression_name(item) for item in node.decorator_list]
