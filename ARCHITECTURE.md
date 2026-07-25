@@ -67,51 +67,162 @@ orders that evidence by timestamp and event ID within a workspace or session.
 `TwinBuilderService` creates local, atomically written `timeline.json`,
 `events.json`, and `summary.json` artifacts under the configured Twin directory.
 `ReplayService` replays those persisted citations without adding explanations
-that the evidence does not support. `AgentDetectorService` classifies only
-visible workspace markers (supporting Codex, Claude Code, Gemini CLI, OpenCode,
-Aider, Cursor, Cline, Roo Code, Windsurf, GitHub Copilot, and future MCP agents)
-and returns the marker paths as its evidence.
+that the evidence does not support.
+
+`AgentDetectorService` classifies only visible workspace markers (supporting
+Codex, Claude Code, Gemini CLI, OpenCode, Aider, Cursor, Cline, Roo Code,
+Windsurf, GitHub Copilot, and future MCP agents) and returns the marker paths
+as its evidence.
 
 ## Phase 9 multi-agent observation
 
 `MultiAgentObservationService` watches and compares multiple coding agents
 simultaneously using observable event data, session metadata, and workspace
-markers. It provides comprehensive comparison APIs across five distinct dimensions:
-1. **Session Comparison:** Analyzes session metadata, durations, files touched, and event compositions.
-2. **Agent Comparison:** Maps agent detections side-by-side with associated workspace and session contexts.
-3. **Timeline Comparison:** Aligns multi-session timelines side-by-side sequentially.
-4. **Performance Comparison:** Tallies and compares execution duration, event rates, and test success/failure outcomes.
-5. **Architecture Comparison:** Examines the structural impact (specifically file paths and event type touchpoints) of each agent's active sessions.
+markers.
 
-It maintains strict compliance with evidence-only boundaries and does not infer hidden reasoning.
+It provides comparison APIs across five distinct dimensions:
+
+1. **Session Comparison:** Analyzes session metadata, durations, files touched,
+   and event compositions.
+
+2. **Agent Comparison:** Maps agent detections side-by-side with associated
+   workspace and session contexts.
+
+3. **Timeline Comparison:** Aligns multi-session timelines side-by-side
+   sequentially.
+
+4. **Performance Comparison:** Tallies and compares execution duration, event
+   rates, and test success/failure outcomes.
+
+5. **Architecture Comparison:** Examines structural impact through file paths
+   and event type touchpoints of each agent's active sessions.
+
+It maintains strict compliance with evidence-only boundaries and does not infer
+hidden reasoning.
 
 `KnowledgeIndexerService` receives filesystem events through a queue and one
 worker. It safely skips text extraction for binary, malformed, or oversized
-files while preserving metadata. `RetrievalService` supplies a stable lexical
-API with scores and citations. `ContextBuilderService` turns ranked chunks into
-bounded RAG context.
+files while preserving metadata.
+
+`RetrievalService` supplies a stable lexical API with scores and citations.
+`ContextBuilderService` turns ranked chunks into bounded RAG context.
 
 ## Project intelligence
 
 `KnowledgeGraphService` statically analyzes Python files for classes,
 dataclasses, enums, functions, methods, variables, constants, decorators,
 imports, inheritance, composition hints, calls, service registrations, and
-EventBus subscriptions. `CrossReferenceService` combines graph evidence with
-lexical retrieval for project-level questions. All graph facts are conservative
-and read-only.
+EventBus subscriptions.
+
+`CrossReferenceService` combines graph evidence with lexical retrieval for
+project-level questions. All graph facts are conservative and read-only.
 
 `SymbolIndexerService` owns version-aware symbol extraction, including module,
 parent symbol, source spans, docstrings, visibility, signatures, and stable
-SQLite symbol IDs. Architecture and documentation analyzers persist health and
-coverage observations as reflections.
+SQLite symbol IDs.
+
+Architecture and documentation analyzers persist health and coverage
+observations as reflections.
 
 After a controlled workspace pass, `KnowledgeGraphService` conservatively
 resolves local Python package imports. The original import target remains the
 graph fact; a resolved document path is supplementary evidence in relationship
 metadata.
 
+## Phase 10 cognitive layer evidence boundary
+
+The Cognitive Layer extends EaglEs EyE reasoning capabilities while preserving
+the evidence-only architecture boundary.
+
+Phase 10 introduces:
+
+- Causal graph relationships between observable events.
+- Architecture evolution tracking.
+- Explicit engineering decision records.
+- Evidence-backed explanation generation.
+
+All cognitive capabilities maintain strict separation:
+Observed Facts
+↓
+Derived Relationships
+↓
+Evidence-Backed Explanations
+
+### Observed Facts
+
+Observed facts are directly recorded evidence from:
+
+- Filesystem events.
+- Git observations.
+- Build observations.
+- Test observations.
+- Terminal observations.
+- Workspace sessions.
+- Agent-visible markers.
+- Explicit engineering records.
+
+Observed facts must contain traceable citations.
+
+### Derived Relationships
+
+Derived relationships are machine-generated connections calculated only from
+observable evidence.
+
+Examples:
+
+- Event ordering.
+- Candidate causal links.
+- Architecture differences.
+- Symbol evolution.
+- Dependency changes.
+- Session correlations.
+
+Derived relationships must never introduce unsupported assumptions.
+
+### Evidence-Backed Explanations
+
+The Cognitive Layer may generate explanations only from:
+
+- Observed facts.
+- Derived relationships.
+- Stored citations.
+
+Allowed example:
+
+> RetrievalService.py changed before a failing test event and was followed by a
+> later commit where the test passed.
+
+Not allowed:
+
+> The developer changed RetrievalService.py because they wanted better
+> performance.
+
+unless that motivation exists as an explicit recorded decision.
+
+The system must never claim:
+
+- Hidden AI reasoning.
+- Developer intent.
+- Unobserved motivations.
+- Private decision processes.
+
+`CognitiveLayerService` extends the existing read-only reasoning foundation by
+producing structured explanations grounded in evidence graphs and citations.
+
 ## Boundaries
 
 `ReasoningService` only prepares evidence and proposals; it cannot execute
-actions. `MCPToolService` defines JSON-shaped domain tools, deliberately
-separate from any future MCP transport/server.
+actions.
+
+`CognitiveLayerService` extends this model by organizing evidence into
+explanations without inferring hidden reasoning.
+
+`MCPToolService` defines JSON-shaped domain tools, deliberately separate from
+any future MCP transport/server.
+
+All autonomous capabilities must remain:
+
+- Evidence-backed.
+- Observable.
+- Reproducible.
+- Non-destructive.
