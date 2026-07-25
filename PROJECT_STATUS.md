@@ -1,43 +1,206 @@
 # Project Status
 
-## Current phase
+## Current Phase
 
 Phase 7 — Reliability, Project Intelligence, and Software Understanding is in
 progress.
+
+---
+
+# Phase 7 Overview
 
 The software-intelligence extension now includes dedicated symbol indexing,
 dependency/project graph facts, project search, architecture observations,
 documentation links, evolution-preserving symbol versions, and health snapshots.
 
-Completed foundations:
+The system is evolving from a file-watching memory system into a project
+intelligence platform capable of understanding software structure, history,
+and engineering evidence.
+
+---
+
+# Completed Foundations
+
+## Phase 6 — Semantic Memory Foundation
+
+Completed:
 
 - Lifecycle-safe configuration for watcher and mirror runtime state.
 - SQLite knowledge store with JSON compatibility.
-- Versioned queued indexing, lexical retrieval, citations, RAG context, and
-  read-only reasoning/MCP domain APIs.
-- Static Python symbols and relationships with cross-reference queries.
-- Reliability regression suites for stress activity, restart persistence,
-  binary/oversized files, rollback integrity, import graphs, retrieval quality,
-  large repositories, and cross references.
+- Versioned queued indexing.
+- Lexical retrieval.
+- Citation-based retrieval results.
+- RAG context construction foundation.
+- Read-only reasoning APIs.
+- MCP-shaped domain APIs.
+- Documents storage.
+- Versioned chunks.
+- Events tracking.
+- Reflections storage.
+- Embedding foundation.
+- Retrieval logging.
+- Relationship storage model.
+- Legacy JSON knowledge compatibility migration.
+
+---
+
+## Phase 7 — Reliability and Software Understanding
+
+Completed:
+
+- Static Python symbol indexing.
+- Symbol relationships and cross-reference queries.
+- Dependency/project graph facts.
+- Project search capabilities.
+- Architecture observations.
+- Documentation links.
+- Evolution-preserving symbol versions.
+- Health snapshots.
+- Reliability regression suites for:
+  - Stress activity.
+  - Restart persistence.
+  - Binary and oversized files.
+  - Rollback integrity.
+  - Import graphs.
+  - Retrieval quality.
+  - Large repositories.
+  - Cross references.
+
 - Deterministic workspace-wide indexing through the existing event-backed,
-  version-preserving pipeline; VCS and runtime directories are excluded by
-  default.
-- Evidence-only timeline and session-summary APIs over the durable event log;
-  they report citations and never attribute hidden agent reasoning.
-- Replayable session reconstruction that produces one cited step per recorded
-  event and explicitly states evidence limitations.
-- Passive engineering-evidence intake for explicitly observed Git, build, test,
-  and terminal records; it does not run commands or change watched workspaces.
-- Read-only Git observer adapter for branch, revision, and porcelain-status
-  evidence; non-repository paths are reported without creating an event.
+  version-preserving pipeline.
 
-Latest measured result: the targeted 10-test Phase 6–7 suite completed in
-7.12 seconds. See `BENCHMARKS.md`; line coverage awaits installation of the
-declared development-only `coverage` dependency.
+- Version control and runtime directories excluded by default.
 
-## Known limitations
+- Evidence-only timeline and session-summary APIs over the durable event log.
 
-- The watcher still maps filesystem renames to delete/create lifecycle events.
-- Graph analysis is intentionally Python-only and static; unresolved names are
-  recorded as symbolic targets.
-- Embeddings, vector search, and a network MCP server are deferred.
+- Replayable session reconstruction producing one cited step per recorded event.
+
+- Explicit evidence limitations preventing unsupported attribution of hidden
+  agent reasoning.
+
+- Passive engineering-evidence intake for explicitly observed:
+  - Git records.
+  - Build records.
+  - Test records.
+  - Terminal records.
+
+- Read-only Git observer adapter providing:
+  - Branch evidence.
+  - Revision evidence.
+  - Porcelain-status evidence.
+
+- Non-repository paths are reported without creating events.
+
+---
+
+# Latest Measurements
+
+The targeted 10-test Phase 6–7 regression suite completed in:
+7.12 seconds
+BENCHMARKS.md
+
+Line coverage remains pending installation of the declared development-only
+`coverage` dependency.
+
+---
+
+# Known Limitations
+
+- The watcher currently maps filesystem renames into delete/create lifecycle
+  events.
+
+- Graph analysis is intentionally Python-only and static.
+
+- Unresolved names are recorded as symbolic targets.
+
+- Embeddings are not yet production enabled.
+
+- Vector search is deferred.
+
+- Network MCP server implementation is deferred.
+
+---
+
+# Milestone History
+
+## Phase 6 — Semantic Memory Foundation
+
+Status:
+
+COMPLETE
+
+Phase Goal:
+
+Create the durable memory, retrieval, reasoning, and knowledge foundation of
+EaglEs EyE.
+
+Phase 6 Gate:
+
+✅ Tests passing
+
+✅ Working tree clean
+
+✅ Documentation reviewed
+
+✅ Architecture reviewed
+
+✅ Constitution reviewed
+
+✅ Commit completed
+
+✅ Phase tag created
+
+Release:
+phase-6-complete
+
+---
+
+## Phase 7 — Reliability, Project Intelligence, and Software Understanding
+
+Status:
+
+IN PROGRESS
+
+Phase Goal:
+
+Transform EaglEs EyE from a memory system into a software intelligence system
+capable of understanding project structure, evolution, dependencies, and
+engineering evidence.
+
+Current Focus:
+
+- Reliability improvements.
+- Deeper software understanding.
+- Engineering intelligence.
+- Controlled expansion toward advanced AI Twin capabilities.
+
+---
+
+# Governance Alignment
+
+EaglEs EyE development follows:
+AI_TWIN_CONSTITUTION.md
+↓
+ROADMAP.md
+↓
+ARCHITECTURE.md
+↓
+PROJECT_STATUS.md
+↓
+NEXT_TASK.md
+
+These documents form the project chain of command.
+
+No implementation decision should override higher-level governance documents.
+
+---
+
+# Next Milestone
+
+Before Phase 8:
+
+- Complete Phase 7 milestone gates.
+- Review architecture.
+- Update roadmap.
+- Update documentation.
+- Confirm readiness for advanced AI Twin intelligence capabilities.
