@@ -1,14 +1,22 @@
 # Project Status
 
-## Current Phase
+## Architecture Freeze
 
-Phase 18 — Universal AI Project Twin (v3.0.0) is complete.
+**v3.0.0 is the permanent architectural baseline.** The AI Twin Core is frozen.
+See [ARCHITECTURAL_BASELINE_v3.0.0.md](ARCHITECTURAL_BASELINE_v3.0.0.md).
 
-Phase 18 delivers the first stable **Universal AI Project Twin** — a
+The foundational roadmap (Phases 8–18) is complete. No additional numbered
+phases will be created. Future development follows the capability-driven
+product roadmap in [ROADMAP.md](ROADMAP.md#product-roadmap--capability-driven).
+
+## Current Version
+
+**v3.0.0 — Universal AI Project Twin**
+
+Phase 18 delivered the first stable **Universal AI Project Twin** — a
 feature-frozen, fully integrated, and validated release that coordinates every
 architectural capability into one coherent AI Twin of any project. No new
-foundational layers were introduced. v3.0.0 is the permanent architectural
-baseline.
+foundational layers were introduced.
 
 ---
 
@@ -254,7 +262,7 @@ Completed:
 
 # Latest Measurements
 
-The Phase 17 v2.5.0 release-gate regression suite completed 356 tests.
+The v3.0.0 release-gate regression suite completed **403 tests**.
 See `BENCHMARKS.md` for recorded measurements.
 
 Line coverage remains pending installation of the declared development-only
@@ -338,8 +346,11 @@ Current Focus:
 - Phase 15 release recorded as `phase15-release` / `v2.3.0`.
 - Phase 16 release recorded as `phase16-release` / `v2.4.0`.
 - Phase 17 release recorded as `phase17-release` / `v2.5.0`.
+- Phase 18 release recorded as `phase18-release` / `v3.0.0`.
 
-Current development is complete.
+The foundational roadmap (Phases 8–18) is complete. No additional numbered
+phases will be created. Future development follows the capability-driven
+product roadmap in [ROADMAP.md](ROADMAP.md#product-roadmap--capability-driven).
 
 ---
 
@@ -364,15 +375,10 @@ No implementation decision should override higher-level governance documents.
 
 # Next Milestone
 
-# Next Milestone
+The foundational roadmap (Phases 8–18) is complete.
 
-The ROADMAP milestones through v2.0.0 are complete.
-
-Phase 17 (v2.5.0) is the latest post-roadmap delivery.
-
-- Phase 16 milestone gates have passed: tests, documentation, architecture, and
-  release record are complete.
-- Phase 17 milestone gates have passed: tests, documentation, architecture, and
-  release record are complete.
-- EaglEs EyE v2.5.0 has been released.
-- Await explicit authorization for any further direction.
+- v3.0.0 (Phase 18) is the permanent architectural baseline.
+- The AI Twin Core is frozen. See [ARCHITECTURAL_BASELINE_v3.0.0.md](ARCHITECTURAL_BASELINE_v3.0.0.md).
+- Future development follows the capability-driven product roadmap in
+  [ROADMAP.md](ROADMAP.md#product-roadmap--capability-driven).
+- Await explicit authorization for the next capability area.

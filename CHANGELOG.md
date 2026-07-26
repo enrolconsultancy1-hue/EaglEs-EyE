@@ -1,5 +1,17 @@
 # Changelog
 
+## Architecture Freeze — 2026-07-26
+
+The AI Twin Core is permanently frozen as of v3.0.0.
+
+- Created `ARCHITECTURAL_BASELINE_v3.0.0.md` — permanent architectural reference
+- Established Architecture Freeze Policy — 22 frozen components
+- Closed the foundational phase roadmap (Phases 8–18 complete, no more phases)
+- Established capability-driven product roadmap (v3.1–v4.0) in ROADMAP.md
+- All future development defined as capability expansion, not architectural redesign
+- Governance rules documented: Architecture Validation Gate, UOP, URP, Release Gate
+- No source code modified, no services changed, no APIs changed, no tests modified
+
 ## phase18-release / v3.0.0 — 2026-07-26
 
 Phase 18 complete — Universal AI Project Twin. v3.0.0 is the final roadmap

@@ -1,26 +1,45 @@
 # Next Task
 
-Phase 18 is complete and released as `phase18-release` / `v3.0.0`.
+The foundational roadmap (Phases 8–18) is complete. **v3.0.0 is the permanent
+architectural baseline.** The AI Twin Core is frozen.
 
-The Universal AI Project Twin Phase transforms EaglEs EyE into a stable,
-feature-frozen Universal AI Project Twin. AITwinOrchestrator coordinates all
-services, TwinIntegrityValidator validates consistency, UnifiedProjectTwin
-presents a single coherent representation, and UniversalTwinReport generates
-complete evidence-backed reports. 40 MCP tools, 403 tests passing.
+## Current State
 
-**v3.0.0 is the permanent architectural baseline.** The roadmap is complete.
-No new foundational layers will be introduced. Future releases extend through
-connectors and reasoning improvements.
+- **Version:** v3.0.0 (phase18-release)
+- **Tests:** 403 passing, zero regressions
+- **MCP Tools:** 40
+- **Architecture:** Frozen per [ARCHITECTURAL_BASELINE_v3.0.0.md](ARCHITECTURAL_BASELINE_v3.0.0.md)
 
-## Future candidates (post-v3.0.0, no roadmap commitment)
+## What's Next
 
-- Additional connector implementations (GitLab, Bitbucket, Jira, Slack, Notion)
-- Webhook listener server implementation
-- GUI connector management panel (Mission Control connectors view)
-- OAuth token refresh flow with persistence
-- Connector persistence (stateful reconnection, SQLite SyncStore)
-- Cross-workspace evidence merging in KnowledgeGraph
-- Connector event replay / recovery
-- CLI connector management commands (`eagle connector list|sync|status`)
-- Multi-connector orchestration (coordinated sync across connectors)
-- Performance optimization for large-scale reasoning (graph caching, lazy loading)
+Future development follows the **capability-driven product roadmap** in
+[ROADMAP.md](ROADMAP.md#product-roadmap--capability-driven).
+
+### Next candidate: v3.1 — Connector Expansion
+
+Extend the Connector Framework to additional ecosystems:
+
+- ClickUp, Jira, Notion, Slack
+- Codex, Cursor, Claude Desktop, Windsurf
+- VS Code, JetBrains
+
+Every new connector MUST comply with:
+
+- Universal Connector Framework
+- Universal Observation Policy
+- Universal Reasoning Policy
+
+**No core architecture changes.**
+
+### Engineering rules
+
+- Architecture Validation Gate remains mandatory
+- Universal Observation Policy remains mandatory
+- Universal Reasoning Policy remains mandatory
+- Release Gate remains mandatory
+- Backward compatibility is required
+- New capabilities extend the architecture
+- The AI Twin Core shall not be redesigned without an approved architectural
+  exception
+
+Await explicit authorization before beginning any implementation work.

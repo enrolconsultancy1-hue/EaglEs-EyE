@@ -5,6 +5,17 @@ The architecture is governed by the
 passive, conclusions are evidence-backed, and services are extended without
 breaking compatibility.
 
+## Architecture Freeze
+
+**v3.0.0 is the permanent architectural baseline.** The AI Twin Core is frozen.
+See [ARCHITECTURAL_BASELINE_v3.0.0.md](ARCHITECTURAL_BASELINE_v3.0.0.md) for the
+complete freeze policy, architectural principles, Universal Observation Policy,
+Universal Reasoning Policy, service topology, evidence flow, and extension rules.
+
+Future releases shall extend the platform — never redesign, replace, or
+fundamentally alter the core. All future development follows the capability
+roadmap in [ROADMAP.md](ROADMAP.md#product-roadmap--capability-driven).
+
 EaglEs EyE is an event-driven kernel. `EyeKernel` owns service registration and
 the synchronous `EventBus`; the watcher publishes filesystem lifecycle events.
 Services initialize configuration-dependent runtime state in `start()`, after
@@ -1151,6 +1162,18 @@ EaglEs EyE can:
 7. All without requiring changes to core architecture (platform independence)
 
 ### 403 tests passing, zero regressions
+
+### Architecture Freeze
+
+The foundational roadmap is complete. **No additional numbered phases will be
+created.** The v3.0.0 architecture is permanently frozen per the Architecture
+Freeze Policy in [ARCHITECTURAL_BASELINE_v3.0.0.md](ARCHITECTURAL_BASELINE_v3.0.0.md).
+
+Future development follows the capability-driven product roadmap in
+[ROADMAP.md](ROADMAP.md#product-roadmap--capability-driven). All future
+extensions shall: extend the architecture, preserve backward compatibility,
+comply with the Universal Observation Policy and Universal Reasoning Policy,
+and never modify frozen components.
 
 All autonomous capabilities must remain:
 
