@@ -30,6 +30,11 @@ Measured on the local Windows development environment using Python 3.14:
 | Phase 16 surface ranking | ObservationDiscoveryEngine ranks surfaces by quality, latency, completeness, reliability |
 | Phase 16 sync engine | initial_sync + delta_sync across 100 items completes with checkpoint persistence |
 | Phase 16 scheduler overhead | ConnectorSchedulerService daemon loop adds <1ms per check tick |
+| Phase 17 v2.5.0 release-gate regression suite (2026-07-26) | 278 existing + 78 Phase 17 = 356 total tests passed |
+| Phase 17 reasoning latency | ReasoningEngine cross-connector query completes in <50ms with mock services |
+| Phase 17 confidence scoring | ConfidenceEngine aggregates evidence quality, source coverage, and missing evidence |
+| Phase 17 graph traversal | KnowledgeGraph confidence propagation traverses 3 hops in <10ms |
+| Phase 17 dependency analysis | Dependency inference with weighting completes in <30ms per path |
 
 The SQLite store uses WAL mode, `synchronous=NORMAL`, foreign-key enforcement,
 and a 5-second busy timeout. This keeps queued indexing practical while each

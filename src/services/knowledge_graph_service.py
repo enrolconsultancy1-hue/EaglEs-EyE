@@ -94,10 +94,12 @@ class KnowledgeGraphService(Service):
         imported = 0
         for evidence in evidence_list:
             target = getattr(evidence, "observation_id", "") or connector_id
+            evidence_id = getattr(evidence, "id", "")
+            confidence = getattr(evidence.confidence, "score", 1.0) if hasattr(evidence, "confidence") else 1.0
             metadata = {
                 "connector_id": connector_id,
-                "evidence_id": getattr(evidence, "id", ""),
-                "confidence": getattr(evidence.confidence, "score", 1.0) if hasattr(evidence, "confidence") else 1.0,
+                "evidence_id": evidence_id,
+                "confidence": confidence,
             }
             if hasattr(evidence, "relationships") and evidence.relationships:
                 for rel in evidence.relationships:
@@ -114,6 +116,94 @@ class KnowledgeGraphService(Service):
                 )
                 imported += 1
         return {"imported": imported, "connector_id": connector_id}
+
+    def related_weighted(self, path):
+        """Return relationships for a path, annotated with confidence weights."""
+        document = self.store.get_document(path, include_chunks=False)
+        if not document:
+            return []
+        with self.store.transaction() as connection:
+            rows = connection.execute(
+                """SELECT target_path, relation, metadata, created_at
+                   FROM relationships WHERE source_document_id = ? ORDER BY created_at DESC""",
+                (document["id"],),
+            ).fetchall()
+        result = []
+        for row in rows:
+            row = dict(row)
+            meta = json.loads(row.get("metadata") or "{}") if isinstance(row.get("metadata"), str) else (row.get("metadata") or {})
+            weight = self._compute_relationship_weight(meta)
+            row["weight"] = weight
+            result.append(row)
+        return result
+
+    def _compute_relationship_weight(self, metadata):
+        base = 1.0
+        confidence = metadata.get("confidence")
+        if confidence is not None:
+            base *= float(confidence)
+        if metadata.get("resolution") == "local":
+            base *= 1.2
+        elif metadata.get("resolution") == "unresolved":
+            base *= 0.5
+        if metadata.get("relation_type"):
+            base *= 1.1
+        return round(min(base, 2.0), 2)
+
+    def propagate_confidence(self, paths, initial_confidence=1.0, depth=3):
+        """Propagate confidence from a set of paths along graph relationships."""
+        propagated = {}
+        visited = set()
+        queue = [(p, initial_confidence, 0) for p in paths]
+        for path, conf, d in queue:
+            if path in visited or d > depth:
+                continue
+            visited.add(path)
+            propagated[path] = max(propagated.get(path, 0), conf)
+            relations = self.related(path)
+            for rel in relations:
+                target = rel.get("target_path", "")
+                if target and target not in visited:
+                    decay = conf * 0.85 ** (d + 1)
+                    queue.append((target, decay, d + 1))
+        return propagated
+
+    def temporal_relationships(self, path, window_days=30):
+        """Return relationships bounded by a recency window."""
+        document = self.store.get_document(path, include_chunks=False)
+        if not document:
+            return []
+        with self.store.transaction() as connection:
+            rows = connection.execute(
+                """SELECT target_path, relation, metadata, created_at
+                   FROM relationships WHERE source_document_id = ?
+                   AND created_at >= datetime('now', ?)
+                   ORDER BY created_at DESC""",
+                (document["id"], "-%d days" % window_days),
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def multi_source_correlate(self, connector_ids, relation="connector_evidence"):
+        """Correlate evidence across multiple connector sources."""
+        if not connector_ids:
+            return {}
+        placeholders = ",".join("?" for _ in connector_ids)
+        with self.store.transaction() as connection:
+            rows = connection.execute(
+                """SELECT target_path, relation, metadata, created_at
+                   FROM relationships
+                   WHERE relation = ? AND source_document_id IN (%s)
+                   ORDER BY target_path, created_at""" % placeholders,
+                (relation, *connector_ids),
+            ).fetchall()
+        correlation = {}
+        for row in rows:
+            row = dict(row)
+            target = row["target_path"]
+            if target not in correlation:
+                correlation[target] = []
+            correlation[target].append(row)
+        return correlation
 
     def resolve_workspace_imports(self, workspace):
         """Attach local-document evidence to imports after a complete index pass.

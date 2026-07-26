@@ -33,6 +33,13 @@ from services.workspace_observer_service import WorkspaceObserverService
 from services.connector_service import ConnectorService
 from services.connector_scheduler_service import ConnectorSchedulerService
 from services.evidence_ingestion_service import EvidenceIngestionService
+from services.confidence_engine import ConfidenceEngine
+from services.reasoning_engine import ReasoningEngine
+from services.project_intelligence_engine import ProjectIntelligenceEngine
+from services.root_cause_analysis_service import RootCauseAnalysisService
+from services.impact_analysis_service import ImpactAnalysisService
+from services.decision_lineage_service import DecisionLineageService
+from services.explainable_ai_service import ExplainableAIService
 
 
 SUPPORTED_PROTOCOL_VERSION = "2025-03-26"
@@ -71,7 +78,7 @@ class MCPServer:
             "result": {
                 "protocolVersion": SUPPORTED_PROTOCOL_VERSION,
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "EaglEs EyE MCP", "version": "2.3.0"},
+                "serverInfo": {"name": "EaglEs EyE MCP", "version": "2.5.0"},
             },
         }
 
@@ -130,11 +137,21 @@ def build_mcp_kernel(memory_path=None):
     connector_svc = ConnectorService(kernel)
     evidence_ingestion = EvidenceIngestionService(kernel)
     connector_scheduler = ConnectorSchedulerService(kernel)
+    confidence_engine = ConfidenceEngine(kernel)
+    reasoning_engine = ReasoningEngine(kernel)
+    project_intelligence = ProjectIntelligenceEngine(kernel)
+    root_cause = RootCauseAnalysisService(kernel)
+    impact = ImpactAnalysisService(kernel)
+    decision_lineage = DecisionLineageService(kernel)
+    explainable = ExplainableAIService(kernel)
     mcp_tool = MCPToolService(kernel)
     services = (store, sym_idx, kg, indexer, retrieval, ctx, xref, arch, docs,
                 ws, timeline, sessions, causal, evolution, decisions, cognitive,
                 embedding, vector_search, awareness, connector_svc,
-                evidence_ingestion, connector_scheduler, mcp_tool)
+                evidence_ingestion, connector_scheduler,
+                confidence_engine, reasoning_engine, project_intelligence,
+                root_cause, impact, decision_lineage, explainable,
+                mcp_tool)
     for s in services:
         kernel.register_service(s)
         s.start()

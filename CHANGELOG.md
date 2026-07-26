@@ -1,5 +1,27 @@
 # Changelog
 
+## phase17-release / v2.5.0 — 2026-07-26
+
+Phase 17 complete — Autonomous Project Intelligence. v2.5.0 transforms EaglEs
+EyE from an evidence collection platform into an evidence reasoning platform.
+No new foundational layers.
+
+- **Universal Reasoning Policy**: Every reasoning result preserves source connectors, observation surfaces, evidence IDs, confidence score, reasoning trace, supporting relationships, and timestamps. No hidden reasoning.
+- **ReasoningEngine** (`services/reasoning_engine.py`): Single entry point for all reasoning. 7 methods covering cross-connector, dependencies, timeline, state transitions, relationship inference, evidence correlation, historical reconstruction.
+- **ConfidenceEngine** (`services/confidence_engine.py`): Evidence quality scoring (citation/source/timestamp), relationship weighting, aggregate scoring. Missing evidence explicitly reported.
+- **KnowledgeGraph enhancements** (`services/knowledge_graph_service.py`): 5 new methods — related_weighted, propagate_confidence (0.85x decay), temporal_relationships, multi_source_correlate, _compute_relationship_weight.
+- **ProjectIntelligenceEngine** (`services/project_intelligence_engine.py`): Composite health score, blocker detection (errors, connector failures), bottleneck detection (high-failure rates), stale/orphan detection, architecture drift (snapshot comparison).
+- **RootCauseAnalysisService** (`services/root_cause_analysis_service.py`): What changed, why, which connector, evidence citations, confidence, causal chain.
+- **ImpactAnalysisService** (`services/impact_analysis_service.py`): Affected files, components, documentation, connectors, impact level.
+- **DecisionLineageService** (`services/decision_lineage_service.py`): Full lineage trace from decision ID; list all lineages by workspace/session.
+- **ExplainableAIService** (`services/explainable_ai_service.py`): Three-phase explanation — gather facts, derive relationships, build explanation with why/how/evidence/knowledge/sources.
+- **8 new MCP tools**: explain_project_state, analyze_project_risk, root_cause_analysis, impact_analysis, project_health, reasoning_trace, evidence_lineage, dependency_graph. All 24 existing tools preserved. 32 tools total.
+- **Service registration**: 7 Phase 17 services registered in build_mcp_kernel() after ConnectorSchedulerService, before MCPToolService. MCP protocol version 2.5.0.
+- **Zero regressions**: 278 existing Phase 6–16 tests continue to pass.
+- **Phase 17 release gate**: 78 Phase 17 tests passed; 356 total (361 including 5 pre-existing stdio exclusions).
+- AI_TWIN_CONSTITUTION.md unchanged.
+- ARCHITECTURE.md, PROJECT_STATUS.md, NEXT_TASK.md, BENCHMARKS.md, CHANGELOG.md updated.
+
 ## phase16-release / v2.4.0 — 2026-07-26
 
 Phase 16 complete — External Project Integration Layer. v2.4.0 proves the

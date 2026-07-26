@@ -20,6 +20,13 @@ class MCPToolService(Service):
         self.connector = None
         self.evidence_ingestion = None
         self.scheduler = None
+        self.reasoning = None
+        self.project_intelligence = None
+        self.root_cause = None
+        self.impact = None
+        self.decision_lineage = None
+        self.confidence = None
+        self.explainable = None
 
     def start(self):
         super().start()
@@ -37,6 +44,13 @@ class MCPToolService(Service):
         self.connector = self.kernel.get_service("ConnectorService")
         self.evidence_ingestion = self.kernel.get_service("EvidenceIngestionService")
         self.scheduler = self.kernel.get_service("ConnectorSchedulerService")
+        self.reasoning = self.kernel.get_service("ReasoningEngine")
+        self.project_intelligence = self.kernel.get_service("ProjectIntelligenceEngine")
+        self.root_cause = self.kernel.get_service("RootCauseAnalysisService")
+        self.impact = self.kernel.get_service("ImpactAnalysisService")
+        self.decision_lineage = self.kernel.get_service("DecisionLineageService")
+        self.confidence = self.kernel.get_service("ConfidenceEngine")
+        self.explainable = self.kernel.get_service("ExplainableAIService")
         print("[MCP TOOLS] Ready.")
 
     def list_tools(self):
@@ -89,6 +103,22 @@ class MCPToolService(Service):
              "description": "Get the last synchronization time for a connector."},
             {"name": "connector_health_details", "inputSchema": {"type": "object", "properties": {"connector_id": {"type": "string"}}, "required": []},
              "description": "Get detailed health information for all or a specific connector."},
+            {"name": "explain_project_state", "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}, "path": {"type": "string"}, "workspace_id": {"type": "string"}, "session_id": {"type": "string"}}, "required": ["query"]},
+             "description": "Explain project state with why, how, supporting evidence, and connector sources."},
+            {"name": "analyze_project_risk", "inputSchema": {"type": "object", "properties": {"workspace_id": {"type": "string"}}},
+             "description": "Analyze project risks including blockers, bottlenecks, stale work, and architecture drift."},
+            {"name": "root_cause_analysis", "inputSchema": {"type": "object", "properties": {"issue": {"type": "string"}, "path": {"type": "string"}, "session_id": {"type": "string"}}, "required": ["issue"]},
+             "description": "Determine root cause for an issue with evidence citations and confidence score."},
+            {"name": "impact_analysis", "inputSchema": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]},
+             "description": "Determine files, components, documentation, and connectors affected by a change."},
+            {"name": "project_health", "inputSchema": {"type": "object", "properties": {"workspace_id": {"type": "string"}}},
+             "description": "Get project health assessment with confidence score and evidence."},
+            {"name": "reasoning_trace", "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}, "mode": {"type": "string", "enum": ["cross_connector", "dependencies", "timeline", "evidence_correlation", "historical"]}}, "required": ["query", "mode"]},
+             "description": "Execute a reasoning trace across connectors, dependencies, timeline, or evidence correlation."},
+            {"name": "evidence_lineage", "inputSchema": {"type": "object", "properties": {"decision_id": {"type": "string"}, "workspace_id": {"type": "string"}, "session_id": {"type": "string"}}, "required": []},
+             "description": "Trace decision lineage from decision ID or list all lineages filtered by workspace/session."},
+            {"name": "dependency_graph", "inputSchema": {"type": "object", "properties": {"path": {"type": "string"}, "depth": {"type": "integer", "default": 2}}, "required": ["path"]},
+             "description": "Analyze dependencies for a given path with confidence propagation."},
         ]
 
     def call_tool(self, name, arguments):
@@ -314,4 +344,91 @@ class MCPToolService(Service):
                 return {"health": all_health}
             except Exception as e:
                 return {"error": str(e)}
+        if name == "explain_project_state":
+            if not self.reasoning or not self.explainable:
+                return {"error": "ReasoningEngine or ExplainableAIService unavailable"}
+            query = arguments.get("query", "")
+            if not query:
+                return {"error": "query is required"}
+            result = self.explainable.explain(
+                query,
+                arguments.get("path"),
+                arguments.get("workspace_id"),
+                arguments.get("session_id"),
+            )
+            return {"explanation": result}
+        if name == "analyze_project_risk":
+            if not self.project_intelligence:
+                return {"error": "ProjectIntelligenceEngine unavailable"}
+            ws_id = arguments.get("workspace_id")
+            blockers = self.project_intelligence.detect_blockers(ws_id)
+            bottlenecks = self.project_intelligence.detect_bottlenecks()
+            stale = self.project_intelligence.detect_stale_work()
+            drift = self.project_intelligence.detect_architecture_drift()
+            return {
+                "blockers": blockers,
+                "bottlenecks": bottlenecks,
+                "stale_work": stale,
+                "architecture_drift": drift,
+            }
+        if name == "root_cause_analysis":
+            if not self.root_cause:
+                return {"error": "RootCauseAnalysisService unavailable"}
+            issue = arguments.get("issue", "")
+            if not issue:
+                return {"error": "issue is required for root_cause_analysis"}
+            result = self.root_cause.analyze(issue, arguments.get("path"), arguments.get("session_id"))
+            return {"root_cause_analysis": result}
+        if name == "impact_analysis":
+            if not self.impact:
+                return {"error": "ImpactAnalysisService unavailable"}
+            path = arguments.get("path", "")
+            if not path:
+                return {"error": "path is required for impact_analysis"}
+            result = self.impact.analyze(path)
+            return {"impact_analysis": result}
+        if name == "project_health":
+            if not self.project_intelligence:
+                return {"error": "ProjectIntelligenceEngine unavailable"}
+            result = self.project_intelligence.project_health(arguments.get("workspace_id"))
+            return {"project_health": result}
+        if name == "reasoning_trace":
+            if not self.reasoning:
+                return {"error": "ReasoningEngine unavailable"}
+            query = arguments.get("query", "")
+            mode = arguments.get("mode", "cross_connector")
+            if not query:
+                return {"error": "query is required for reasoning_trace"}
+            if mode == "cross_connector":
+                result = self.reasoning.reason_cross_connector(query)
+            elif mode == "dependencies":
+                result = self.reasoning.reason_dependencies(query)
+            elif mode == "timeline":
+                result = self.reasoning.reason_timeline(query)
+            elif mode == "evidence_correlation":
+                result = self.reasoning.reason_evidence_correlation()
+            elif mode == "historical":
+                result = self.reasoning.reason_historical(query)
+            else:
+                return {"error": "Unknown reasoning mode: " + mode}
+            return {"reasoning_trace": result}
+        if name == "evidence_lineage":
+            if not self.decision_lineage:
+                return {"error": "DecisionLineageService unavailable"}
+            decision_id = arguments.get("decision_id", "")
+            if decision_id:
+                result = self.decision_lineage.trace(decision_id)
+                return {"evidence_lineage": result}
+            result = self.decision_lineage.list_lineages(
+                arguments.get("workspace_id"), arguments.get("session_id"))
+            return {"evidence_lineages": result}
+        if name == "dependency_graph":
+            if not self.reasoning:
+                return {"error": "ReasoningEngine unavailable"}
+            path = arguments.get("path", "")
+            if not path:
+                return {"error": "path is required for dependency_graph"}
+            depth = int(arguments.get("depth", 2))
+            result = self.reasoning.reason_dependencies(path, depth)
+            return {"dependency_graph": result}
         return {"error": "Unknown tool: " + str(name)}

@@ -1,25 +1,29 @@
 # Next Task
 
-Phase 16 is complete and released as `phase16-release` / `v2.4.0`.
+Phase 17 is complete and released as `phase17-release` / `v2.5.0`.
 
-The External Project Integration Layer provides reusable infrastructure for
-all future connectors: authentication, webhooks, sync engine, scheduler,
-metrics, REST base, ObservationDiscoveryEngine, and the GitHub connector plugin.
+The Autonomous Project Intelligence Phase transforms EaglEs EyE from an
+evidence collection platform into an evidence reasoning platform. The
+ReasoningEngine is the single entry point for all reasoning, routing to
+sub-engines for project intelligence, root cause analysis, impact analysis,
+decision lineage, confidence scoring, and explainable AI.
 
-The Universal Observation Policy (4 abstract methods on Connector ABC) is now
-mandatory for every connector — surfaces are discovered, ranked, and selected
-automatically.
+The Universal Reasoning Policy ensures every conclusion preserves complete
+evidence provenance — source connectors, observation surfaces, evidence IDs,
+confidence scores, reasoning traces, supporting relationships, and timestamps.
 
-Phase 17 candidates (pending authorization):
+Phase 18 candidates (pending authorization):
 
+- **Universal AI Project Twin (v3.0.0)** — the Phase 18 mission: observe,
+  understand, synchronize, and reason across any present or future project
+  ecosystem through standardized connectors
 - Additional connector implementations (GitLab, Bitbucket, Jira, Slack, Notion)
-- GUI connector management panel
-- Connector testing framework / integration test harness
-- Performance optimization for large-scale observation (rate limiting, caching)
+- Webhook listener server implementation
+- GUI connector management panel (Mission Control connectors view)
+- OAuth token refresh flow with persistence
 - Connector persistence (stateful reconnection, SQLite SyncStore)
 - Cross-workspace evidence merging in KnowledgeGraph
 - Connector event replay / recovery
-- Webhook listener server implementation
-- OAuth token refresh flow
 - CLI connector management commands (`eagle connector list|sync|status`)
 - Multi-connector orchestration (coordinated sync across connectors)
+- Performance optimization for large-scale reasoning (graph caching, lazy loading)

@@ -699,6 +699,191 @@ EvidenceIngestionService
 MCPToolService  (consumes all above)
 ```
 
+## Phase 17 Autonomous Project Intelligence (v2.5.0)
+
+Phase 17 transforms EaglEs EyE from an evidence collection platform into an
+evidence reasoning platform. It builds entirely on existing architecture
+without introducing new foundational layers.
+
+### Universal Reasoning Policy
+
+**Every reasoning result SHALL preserve complete evidence provenance.**
+
+A reasoning result SHALL NEVER exist without:
+
+- Source Connector(s)
+- Observation Surface(s)
+- Evidence IDs
+- Confidence Score
+- Reasoning Trace
+- Supporting Relationships
+- Timestamp(s)
+
+Every conclusion shall remain reproducible. No hidden reasoning. No unsupported
+conclusions. No connector provenance may be discarded.
+
+### ReasoningEngine (single entry point)
+
+`ReasoningEngine` (`services/reasoning_engine.py`) is the single entry point for
+all Phase 17 reasoning. MCP tools delegate to ReasoningEngine, which routes to
+the appropriate sub-engine:
+
+```
+MCP Tool
+    │
+    ▼
+ReasoningEngine
+    │
+    ├── Course: cross-connector, dependency, timeline,
+    │          state transition, relationship inference,
+    │          evidence correlation, historical reconstruction
+    ├── ProjectIntelligenceEngine  (health, blockers, bottlenecks, stale, drift)
+    ├── RootCauseAnalysisService   (what/why/evidence/confidence)
+    ├── ImpactAnalysisService      (files, components, docs, connectors)
+    ├── DecisionLineageService     (decision → evidence → observation → source)
+    ├── ConfidenceEngine           (score, quality, missing, trace)
+    └── ExplainableAIService       (why, how, evidence, knowledge, sources)
+```
+
+Reasoning methods:
+
+| Method | Purpose |
+|--------|---------|
+| `reason_cross_connector(query)` | Search across all connectors for evidence |
+| `reason_dependencies(path, depth)` | Dependency graph with confidence propagation |
+| `reason_timeline(path, session_id)` | Ordered event timeline with causal relationships |
+| `reason_state_transitions(path)` | Document version transition analysis |
+| `reason_relationships(path)` | Relationship inference with weighting |
+| `reason_evidence_correlation(connector_ids)` | Cross-connector evidence correlation |
+| `reason_historical(path, session_id)` | Historical reconstruction with evolution |
+
+### ConfidenceEngine
+
+`ConfidenceEngine` (`services/confidence_engine.py`) provides:
+
+- `score_evidence(evidence_list)` — composite score from quality, coverage, trace
+- `score_relationships(relationships)` — weight-based relationship confidence
+- `aggregate(*scores_and_details)` — combine multiple confidence scores
+
+Every evidence item is assessed for citation presence, source connector, and
+timestamp. Missing evidence is explicitly reported (never fabricated).
+
+### KnowledgeGraph Enhancements
+
+Added to `KnowledgeGraphService` (`services/knowledge_graph_service.py`):
+
+| Method | Purpose |
+|--------|---------|
+| `related_weighted(path)` | Relationships annotated with computed confidence weights |
+| `propagate_confidence(paths, confidence, depth)` | Confidence propagation along graph edges with decay (0.85x per hop) |
+| `temporal_relationships(path, window_days)` | Relationships bounded by recency window |
+| `multi_source_correlate(connector_ids)` | Cross-connector evidence correlation |
+| `_compute_relationship_weight(metadata)` | Weight from confidence, resolution, type |
+
+Relationship weight formula:
+```
+base = 1.0 × confidence × (1.2 if resolved_local else 0.5 if unresolved)
+                                  × (1.1 if typed_relation)
+                                  → clamped to [0, 2.0]
+```
+
+### ProjectIntelligenceEngine
+
+`ProjectIntelligenceEngine` (`services/project_intelligence_engine.py`)
+automatically determines:
+
+| Method | Detection |
+|--------|-----------|
+| `project_health(workspace_id)` | Composite health from doc count, relationships, connector health |
+| `detect_blockers(workspace_id)` | Error events, connector failures, causal blockers |
+| `detect_bottlenecks()` | High-failure connectors, high-frequency event types |
+| `detect_stale_work(days)` | Stale (>N days) and orphaned (no relationships) documents |
+| `detect_architecture_drift()` | Symbol changes between architecture snapshots |
+
+### RootCauseAnalysisService
+
+`RootCauseAnalysisService` (`services/root_cause_analysis_service.py`):
+
+- `analyze(issue, path, session_id)` — determines what changed, why, which
+  connector observed it, which evidence supports it, confidence score, related
+  artifacts. Includes causal chain analysis and symbol evolution tracking.
+
+### ImpactAnalysisService
+
+`ImpactAnalysisService` (`services/impact_analysis_service.py`):
+
+- `analyze(path)` — determines files affected, components affected,
+  documentation affected, connectors involved, estimated impact level
+  (low/medium/high). Uses knowledge graph relationships, causal downstream
+  chains, and where-used analysis.
+
+### DecisionLineageService
+
+`DecisionLineageService` (`services/decision_lineage_service.py`):
+
+- `trace(decision_id)` — full lineage: decision → supporting evidence → related
+  observations → timeline → confidence → source connectors
+- `list_lineages(workspace_id, session_id)` — list all decision lineages
+
+### ExplainableAIService
+
+`ExplainableAIService` (`services/explainable_ai_service.py`):
+
+- `explain(query, path, workspace_id, session_id)` — three-phase explanation:
+  1. Gather facts (events, documents, symbols, cognitive explanations)
+  2. Derive relationships (evidence ordering, causal chains)
+  3. Build explanation (why, how, supporting evidence, related knowledge)
+
+### New MCP tools (32 total)
+
+| Tool | Backend Service |
+|------|----------------|
+| `explain_project_state` | ExplainableAIService via ReasoningEngine |
+| `analyze_project_risk` | ProjectIntelligenceEngine (blockers + bottlenecks + stale + drift) |
+| `root_cause_analysis` | RootCauseAnalysisService |
+| `impact_analysis` | ImpactAnalysisService |
+| `project_health` | ProjectIntelligenceEngine |
+| `reasoning_trace` | ReasoningEngine (cross_connector/dependencies/timeline/evidence_correlation/historical) |
+| `evidence_lineage` | DecisionLineageService |
+| `dependency_graph` | ReasoningEngine (dependencies with depth) |
+
+All 24 existing tools preserved unchanged.
+
+### Service startup order
+
+In `build_mcp_kernel()`, the seven Phase 17 services are registered after
+`ConnectorSchedulerService` and before `MCPToolService`:
+
+```
+EmbeddingService
+  ↓
+VectorSearchService
+  ↓
+SemanticAwarenessService
+  ↓
+ConnectorService
+  ↓
+EvidenceIngestionService
+  ↓
+ConnectorSchedulerService
+  ↓
+ConfidenceEngine
+  ↓
+ReasoningEngine
+  ↓
+ProjectIntelligenceEngine
+  ↓
+RootCauseAnalysisService
+  ↓
+ImpactAnalysisService
+  ↓
+DecisionLineageService
+  ↓
+ExplainableAIService
+  ↓
+MCPToolService  (consumes all above)
+```
+
 ## Phase 16 External Project Integration Layer (v2.4.0)
 
 Phase 16 proves the Connector Framework against a real external ecosystem

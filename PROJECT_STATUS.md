@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 16 — External Project Integration Layer (v2.4.0) is complete.
+Phase 17 — Autonomous Project Intelligence (v2.5.0) is complete.
 
 ---
 
@@ -81,28 +81,24 @@ Completed:
 - Zero regressions: all 203 existing Phase 6–14 tests continue to pass unchanged.
 - Version target achieved: v2.3.0.
 
-## Phase 16 — External Project Integration Layer (v2.4.0)
+## Phase 17 — Autonomous Project Intelligence (v2.5.0)
 
 Completed:
 
-- **Universal Observation Policy**: 4 abstract methods on `Connector` ABC: `discover_observation_surfaces()`, `rank_observation_surfaces()`, `select_observation_pipeline()`, `get_active_surfaces()`. All existing connectors (Filesystem, Git, Mock) implement them.
-- **ObservationDiscoveryEngine** (`connectors/observation_discovery.py`): Surface quality scoring, preference ordering, automatic pipeline selection.
-- **Connector Authentication** (`connectors/auth/__init__.py`): `PATAuth`, `OAuthAuth`, `APIKeyAuth`, `BearerTokenAuth` with secure credential handling, sanitization, and validation.
-- **Webhook Framework** (`connectors/webhooks/__init__.py`): `WebhookRegistry`, `SignatureVerifier` (HMAC-SHA256/SHA1), `WebhookQueue`, `ReplayGuard` (idempotency), `WebhookHandler`.
-- **SyncEngine** (`connectors/sync.py`): `initial_sync()`, `delta_sync()`, `resume()`, `detect_conflict()` with checkpoint save/load via `SyncStore`.
-- **ConnectorSchedulerService** (`services/connector_scheduler_service.py`): Background periodic synchronization with exponential backoff, manual trigger, daemon thread. Disabled by default.
-- **MetricsCollector** (`connectors/metrics.py`): Thread-safe per-connector counters for sync count, API requests, failures, retries, evidence, observations, uptime, throughput.
-- **RESTConnector** (`connectors/rest_connector.py`): Reusable base class for REST-based project systems with pagination (Link header / page-based), retry policy (exponential backoff), health check, auth setup.
-- **GitHubConnector** (`connectors/plugins/github_connector.py`): 9 capabilities — repository metadata, branches, commits, pull requests, issues, releases, tags, contributors, events. Implements all 4 Universal Observation Policy methods with `official_api` and `git_repository` surfaces.
-- **Manifest extension**: 5 new fields — `observation_surfaces`, `preferred_surface`, `supports_multi_surface`, `supports_incremental_sync`, `supports_realtime`.
-- **SDK extension**: `run_observation_discovery()` static method on `ConnectorSDK`.
-- **Validator extension**: `VALID_OBSERVATION_SURFACES` list, `"network"` and `"webhook"` capabilities added.
-- **5 new MCP tools**: `github_connector_status`, `connector_sync`, `connector_metrics`, `connector_last_sync`, `connector_health_details`. All 19 existing tools preserved. 24 tools total.
-- **`ConnectorSchedulerService`** registered in `build_mcp_kernel()` after `EvidenceIngestionService`, before `MCPToolService`.
-- **Sample configs**: `github_connector.yaml.example` and `webhook_listener.yaml.example` with no secrets.
-- **42 Phase 16 tests**: covering ObservationDiscovery (5), Auth (6), Webhooks (4), Sync (6), Metrics (3), Connector surfaces (5), Manifest extension (3), Scheduler (4), MCP tools (4), SDK fix (1), Phase 15.1 verification (2).
-- Zero regressions: all 231 existing Phase 6–15 tests continue to pass unchanged. 273 total.
-- Version target achieved: v2.4.0.
+- **Universal Reasoning Policy**: Every reasoning result preserves complete evidence provenance. Required fields: source connectors, observation surfaces, evidence IDs, confidence score, reasoning trace, supporting relationships, timestamps. No hidden reasoning. No unsupported conclusions.
+- **ReasoningEngine** (`services/reasoning_engine.py`): Single entry point for all reasoning. MCP tools delegate to ReasoningEngine → sub-engines. Methods: reason_cross_connector, reason_dependencies, reason_timeline, reason_state_transitions, reason_relationships, reason_evidence_correlation, reason_historical.
+- **ConfidenceEngine** (`services/confidence_engine.py`): Evidence scoring (citation/source/timestamp quality), relationship scoring (weight-based), aggregate scoring. Missing evidence explicitly reported.
+- **KnowledgeGraph enhancements** (`services/knowledge_graph_service.py`): 5 new methods — related_weighted (confidence weights), propagate_confidence (0.85x decay per hop), temporal_relationships (recency window), multi_source_correlate (cross-connector), _compute_relationship_weight (formula: confidence × resolution × type).
+- **ProjectIntelligenceEngine** (`services/project_intelligence_engine.py`): 5 methods — project_health (composite score), detect_blockers (errors/failures), detect_bottlenecks (high-failure connectors), detect_stale_work (>N days + orphans), detect_architecture_drift (snapshot comparison).
+- **RootCauseAnalysisService** (`services/root_cause_analysis_service.py`): Determines what changed, why, which connector observed it, evidence citations, confidence score, causal chain, symbol evolution.
+- **ImpactAnalysisService** (`services/impact_analysis_service.py`): Determines affected files, components, documentation, connectors, impact level (low/medium/high).
+- **DecisionLineageService** (`services/decision_lineage_service.py`): trace(decision_id) returns full lineage; list_lineages(workspace_id, session_id) lists all.
+- **ExplainableAIService** (`services/explainable_ai_service.py`): Three-phase explanation — gather facts, derive relationships, build explanation (why, how, supporting evidence, related knowledge, connector sources).
+- **8 new MCP tools**: explain_project_state, analyze_project_risk, root_cause_analysis, impact_analysis, project_health, reasoning_trace, evidence_lineage, dependency_graph. All 24 existing tools preserved. 32 tools total.
+- **Service registration**: 7 new services registered in `build_mcp_kernel()` after ConnectorSchedulerService, before MCPToolService.
+- **78 Phase 17 tests**: covering ReasoningEngine (12), ProjectIntelligenceEngine (10), RootCauseAnalysis (4), ImpactAnalysis (3), DecisionLineage (5), ExplainableAI (4), ConfidenceEngine (10), KnowledgeGraph enhancements (8), MCP tools (16), Universal Reasoning Policy compliance (3), MCPServer registration (3).
+- Zero regressions: all 278 existing Phase 6–16 tests continue to pass unchanged. 356 total.
+- Version target achieved: v2.5.0.
 
 ## Phase 13 — Semantic Intelligence & Autonomous Awareness (v2.1.0)
 
@@ -252,7 +248,7 @@ Completed:
 
 # Latest Measurements
 
-The Phase 16 v2.4.0 release-gate regression suite completed 273 tests.
+The Phase 17 v2.5.0 release-gate regression suite completed 356 tests.
 See `BENCHMARKS.md` for recorded measurements.
 
 Line coverage remains pending installation of the declared development-only
@@ -335,6 +331,7 @@ Current Focus:
 - Phase 14 release recorded as `phase14-release` / `v2.2.0`.
 - Phase 15 release recorded as `phase15-release` / `v2.3.0`.
 - Phase 16 release recorded as `phase16-release` / `v2.4.0`.
+- Phase 17 release recorded as `phase17-release` / `v2.5.0`.
 
 Current development is complete.
 
@@ -365,11 +362,11 @@ No implementation decision should override higher-level governance documents.
 
 The ROADMAP milestones through v2.0.0 are complete.
 
-Phase 16 (v2.4.0) is the latest post-roadmap delivery.
+Phase 17 (v2.5.0) is the latest post-roadmap delivery.
 
-- Phase 15 milestone gates have passed: tests, documentation, architecture, and
-  release record are complete.
 - Phase 16 milestone gates have passed: tests, documentation, architecture, and
   release record are complete.
-- EaglEs EyE v2.4.0 has been released.
+- Phase 17 milestone gates have passed: tests, documentation, architecture, and
+  release record are complete.
+- EaglEs EyE v2.5.0 has been released.
 - Await explicit authorization for any further direction.
