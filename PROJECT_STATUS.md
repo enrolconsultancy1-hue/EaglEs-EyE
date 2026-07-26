@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 13 — Semantic Intelligence & Autonomous Awareness (v2.1.0) is complete.
+Phase 14 — Universal Connector Framework (v2.2.0) is complete.
 
 ---
 
@@ -36,6 +36,31 @@ Completed:
 - Strict consumer boundary: GUI never imports EyeKernel, bypasses MCP, writes to SQLite, mutates workspaces, executes commands, or stages commits.
 - Comprehensive Phase 12 test suite: 21 tests covering MCP client, server, templates, app bootstrap, and large workspace performance.
 - Version target achieved: v2.0.0.
+
+## Phase 14 — Universal Connector Framework (v2.2.0)
+
+Completed:
+
+- `connectors/` package with 12 modules: connector, connector_manager, registry, events, models, discovery, sdk, exceptions, health, loader, manifest, validator.
+- Standard connector interface with 13 methods: connect, disconnect, start, stop, discover, observe, collect, normalize, emit, health, heartbeat, status.
+- Connector manifests (JSON/YAML) with connector ID, name, version, vendor, capabilities, permissions, entry point, dependencies.
+- Thread-safe `ConnectorRegistry` with registration, unregistration, lookup, and bulk validation.
+- `ConnectorDiscovery` for automatic directory-based discovery and dependency resolution.
+- `ConnectorLoader` for dynamic module loading without kernel code changes.
+- `ConnectorHealth` with state machine (disconnected → connected → starting → running → paused → error → stopped) and heartbeat monitoring.
+- Canonical evidence model: Observation, Evidence, Artifact, Source, Identity, Timestamp, Confidence, RawPayload, NormalizedPayload, TraceInformation, CitationInformation, Relationship, Metadata.
+- Normalization pipeline: Observe → Collect → Normalize → Validate → Emit → Knowledge Graph → Reasoning.
+- 10 connector event types published to the kernel EventBus.
+- `ConnectorSDK` with pipeline runner, evidence factory, and capability/permission guards.
+- Three reference connectors: FilesystemConnector (walk-based file observation), GitConnector (read-only status/branch/log), MockConnector (testable failure modes).
+- `CapabilityValidator` and `PermissionValidator` with strict capability/permission sets.
+- `ManifestValidator` for manifest completeness and validity checks.
+- `ConnectorService` bridging the framework to the EyeKernel with built-in connector registration.
+- 3 new MCP tools: `list_connectors`, `get_connector_status`, `get_connector_health_all` — all existing 14 tools preserved.
+- `ConnectorManager` lifecycle orchestration with orchestrated start/stop/observe/collect/heartbeat.
+- Comprehensive Phase 14 test suite: 112 tests covering models, health, manifest, validation, base connector, mock/filesystem/git connectors, registry, manager, SDK, discovery, events, loader, ConnectorService, MCP tools, pipeline, error recovery, performance, dynamic loading, and lifecycle.
+- Zero regressions: all 91 existing Phase 6–13 tests continue to pass unchanged.
+- Version target achieved: v2.2.0.
 
 ## Phase 13 — Semantic Intelligence & Autonomous Awareness (v2.1.0)
 
@@ -202,9 +227,13 @@ Line coverage remains pending installation of the declared development-only
 
 - Unresolved names are recorded as symbolic targets.
 
-- Embeddings are not yet production enabled.
+- Connector authentication (OAuth, API keys, tokens) not yet implemented.
 
-- Vector search is deferred.
+- Network-based connectors (GitHub API, MCP client, HTTP API) not yet implemented.
+
+- Connector persistence (stateful reconnection across restarts) not yet implemented.
+
+- GUI connector management panel not yet implemented.
 
 ---
 

@@ -17,6 +17,7 @@ class MCPToolService(Service):
         self.cognitive = None
         self.vector_search = None
         self.awareness = None
+        self.connector = None
 
     def start(self):
         super().start()
@@ -31,6 +32,7 @@ class MCPToolService(Service):
         self.cognitive = self.kernel.get_service("CognitiveLayerService")
         self.vector_search = self.kernel.get_service("VectorSearchService")
         self.awareness = self.kernel.get_service("SemanticAwarenessService")
+        self.connector = self.kernel.get_service("ConnectorService")
         print("[MCP TOOLS] Ready.")
 
     def list_tools(self):
@@ -63,6 +65,12 @@ class MCPToolService(Service):
              "description": "Find semantically similar items to a given entity by ID."},
             {"name": "get_awareness_signals", "inputSchema": {"type": "object", "properties": {"signal_type": {"type": "string"}, "limit": {"type": "integer"}}},
              "description": "List recent semantic awareness signals."},
+            {"name": "list_connectors", "inputSchema": {"type": "object", "properties": {}},
+             "description": "List all registered connectors and their status."},
+            {"name": "get_connector_status", "inputSchema": {"type": "object", "properties": {"connector_id": {"type": "string"}}, "required": ["connector_id"]},
+             "description": "Get detailed status for a specific connector."},
+            {"name": "get_connector_health_all", "inputSchema": {"type": "object", "properties": {}},
+             "description": "Get health status for all registered connectors."},
         ]
 
     def call_tool(self, name, arguments):
@@ -160,4 +168,32 @@ class MCPToolService(Service):
             limit = int(arguments.get("limit", 20))
             signals = self.awareness.get_signals(signal_type, limit)
             return {"signals": signals}
+        if name == "list_connectors":
+            if not self.connector or not self.connector.get_manager():
+                return {"error": "ConnectorService is unavailable"}
+            manager = self.connector.get_manager()
+            connectors = []
+            for cid in manager.list_ids():
+                try:
+                    status = manager.connector_status(cid)
+                    connectors.append(status)
+                except Exception:
+                    connectors.append({"id": cid, "state": "error"})
+            return {"connectors": connectors}
+        if name == "get_connector_status":
+            if not self.connector or not self.connector.get_manager():
+                return {"error": "ConnectorService is unavailable"}
+            connector_id = arguments.get("connector_id", "")
+            if not connector_id:
+                return {"error": "connector_id is required"}
+            try:
+                status = self.connector.get_manager().connector_status(connector_id)
+                return {"status": status}
+            except Exception as e:
+                return {"error": str(e)}
+        if name == "get_connector_health_all":
+            if not self.connector or not self.connector.get_manager():
+                return {"error": "ConnectorService is unavailable"}
+            health = self.connector.get_manager().check_health_all()
+            return {"health": health}
         return {"error": "Unknown tool: " + str(name)}

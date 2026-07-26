@@ -1,5 +1,29 @@
 # Changelog
 
+## phase14-release / v2.2.0 — 2026-07-26
+
+Phase 14 complete — Universal Connector Framework. v2.2.0 introduces the
+only approved mechanism for external integrations.
+
+- Created `connectors/` package with 12 modules: connector, connector_manager, registry, events, models, discovery, sdk, exceptions, health, loader, manifest, validator.
+- Standard connector interface with 13 lifecycle and data methods.
+- Connector manifests (JSON/YAML) with metadata, capabilities, permissions, and dependencies.
+- Thread-safe `ConnectorRegistry` with automatic discovery and dependency resolution.
+- `ConnectorHealth` state machine with 7 states and heartbeat monitoring.
+- Canonical evidence model with Observation, Evidence, Artifact, Source, Identity, Timestamp, Confidence, RawPayload, NormalizedPayload, TraceInformation, CitationInformation.
+- Normalization pipeline: Observe → Collect → Normalize → Validate → Emit → Knowledge Graph → Reasoning.
+- 10 connector event types published to the kernel EventBus.
+- `ConnectorSDK` for minimal-boilerplate connector development.
+- `CapabilityValidator` and `PermissionValidator` with strict capability/permission sets.
+- `ConnectorService` bridging the framework to the EyeKernel.
+- Three reference connectors: FilesystemConnector, GitConnector (read-only), MockConnector.
+- 3 new MCP tools: `list_connectors`, `get_connector_status`, `get_connector_health_all`. All 14 existing tools preserved.
+- Dynamic plugin loading from `connectors/plugins/` — no kernel code changes required.
+- Connector Developer Guide (`src/connectors/README.md`) with quick start, manifest spec, and lifecycle documentation.
+- Zero regressions: 91 existing Phase 6–13 tests continue to pass.
+- Phase 14 release gate: 112 Phase 14 tests passed; 203 total.
+- AI_TWIN_CONSTITUTION.md unchanged.
+
 ## phase13-release / v2.1.0 — 2026-07-25
 
 Phase 13 complete — Semantic Intelligence & Autonomous Awareness. v2.1.0 first post-roadmap delivery.

@@ -18,6 +18,10 @@ Measured on the local Windows development environment using Python 3.14:
 | Phase 11 release-gate regression suite (2026-07-25) | 77 tests passed in 12.82 seconds (79 total, 2 pre-existing watchdog exclusions) |
 | Phase 12 v2.0.0 release-gate regression suite (2026-07-25) | 98 tests passed in 20.71 seconds (100 total, 2 pre-existing watchdog exclusions) |
 | Phase 13 v2.1.0 release-gate regression suite (2026-07-25) | 91 tests passed (63 Phase 6–12 + 28 Phase 13) |
+| Phase 14 v2.2.0 release-gate regression suite (2026-07-25) | 91 existing + 112 Phase 14 = 203 total tests passed |
+| Phase 14 registration speed | 100 connectors registered in under 5 seconds |
+| Phase 14 normalization speed | 100 observations processed in under 5 seconds |
+| Phase 14 heartbeat latency | 100 heartbeats in under 5 seconds |
 
 The SQLite store uses WAL mode, `synchronous=NORMAL`, foreign-key enforcement,
 and a 5-second busy timeout. This keeps queued indexing practical while each

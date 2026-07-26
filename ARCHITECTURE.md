@@ -470,6 +470,130 @@ SemanticAwarenessService
 MCPToolService  (consumes all three)
 ```
 
+## Phase 14 Universal Connector Framework (v2.2.0)
+
+Phase 14 introduces the Connector Framework — the only approved mechanism for
+external integrations. Every future platform must plug into this framework;
+no connector may bypass it.
+
+### Architecture
+
+```
+connectors/
+  __init__.py            — Package docstring
+  connector.py           — Base Connector abstract class
+  connector_manager.py   — Connector lifecycle orchestration
+  registry.py            — Thread-safe connector registry
+  events.py              — Connector event type constants and data
+  models.py              — Canonical evidence model (Observation, Evidence, etc.)
+  discovery.py           — Connector discovery from manifests
+  sdk.py                 — Connector SDK helper and pipeline runner
+  exceptions.py          — Connector-specific exception hierarchy
+  health.py              — ConnectorState enum and ConnectorHealth dataclass
+  loader.py              — Dynamic connector loading from plugins
+  manifest.py            — Connector manifest parser (JSON/YAML)
+  validator.py           — Capability, permission, and manifest validation
+  plugins/               — Sample reference connectors
+    filesystem_connector.py
+    git_connector.py
+    mock_connector.py
+```
+
+### Standard connector interface
+
+Every connector exposes: `connect()`, `disconnect()`, `start()`, `stop()`,
+`discover()`, `observe()`, `collect()`, `normalize()`, `emit()`,
+`health()`, `heartbeat()`, `status()`.
+
+### Normalization pipeline
+
+```
+Observe
+  ↓
+Collect
+  ↓
+Normalize
+  ↓
+Validate
+  ↓
+Emit
+  ↓
+Knowledge Graph
+  ↓
+Reasoning
+```
+
+No connector may inject data directly into the knowledge graph or reasoning
+systems.
+
+### Connector manifests
+
+Connectors declare metadata in `connector.yaml` or `connector.json`:
+connector ID, name, version, vendor, capabilities, permissions, minimum
+Eye version, supported OS, entry point, and dependencies. Manifests are
+discovered automatically from `connectors/plugins/`.
+
+### Evidence model
+
+The canonical evidence format includes: Observation, Evidence, Artifact,
+Source, Identity, Timestamp, Confidence, RawPayload, NormalizedPayload,
+TraceInformation, CitationInformation, Relationship, Metadata.
+
+### Connector health
+
+Every connector reports: state (disconnected/connected/starting/running/
+paused/error/stopped), last heartbeat, last observation, errors, uptime,
+started-at.
+
+### Connector events
+
+The framework publishes events to the kernel EventBus: CONNECTOR_REGISTERED,
+CONNECTOR_STARTED, CONNECTOR_STOPPED, CONNECTOR_HEALTH_CHANGED,
+CONNECTOR_DISCOVERED, CONNECTOR_FAILED, CONNECTOR_OBSERVATION,
+CONNECTOR_EVIDENCE, CONNECTOR_WARNING, CONNECTOR_ERROR.
+
+### MCP tool integration
+
+Three new MCP tools are exposed:
+
+| Tool | Purpose |
+|------|---------|
+| `list_connectors` | List all registered connectors and their status |
+| `get_connector_status` | Get detailed status for a specific connector |
+| `get_connector_health_all` | Get health status for all registered connectors |
+
+### ConnectorService
+
+`ConnectorService` bridges the connector framework to the EyeKernel. It owns
+a `ConnectorManager`, registers built-in connectors (Filesystem, Git, Mock)
+at startup, and publishes connector events to the kernel's EventBus. It is
+registered in `build_mcp_kernel()` alongside existing services.
+
+### Sample connectors
+
+| Connector | Capabilities | Description |
+|-----------|-------------|-------------|
+| FilesystemConnector | filesystem, documents, logs, artifacts | Walks directories, reports file metadata |
+| GitConnector | git, commits | Read-only Git status, branch, log queries |
+| MockConnector | api, knowledge | Test/development reference with configurable failure modes |
+
+### Service startup order
+
+In `build_mcp_kernel()`, `ConnectorService` is registered after the Phase 13
+semantic services and before `MCPToolService`:
+
+```
+EmbeddingService
+  ↓
+VectorSearchService
+  ↓
+SemanticAwarenessService
+  ↓
+ConnectorService
+  ↓
+MCPToolService  (consumes all above)
+```
+
 ## Boundaries
 
 `ReasoningService` only prepares evidence and proposals; it cannot execute

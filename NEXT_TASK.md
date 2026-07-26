@@ -1,9 +1,16 @@
 # Next Task
 
-Phase 13 is complete and released as `phase13-release` / `v2.1.0`.
+Phase 14 is complete and released as `phase14-release` / `v2.2.0`.
 
-All ROADMAP milestones through v2.0.0 are complete. Phase 13 (v2.1.0) is the
-first post-roadmap delivery — Semantic Intelligence & Autonomous Awareness.
+The Connector Framework is now the only approved mechanism for external
+integrations. Every future platform (GitHub, ClickUp, Codex, IDE plugins,
+MCP servers, etc.) must plug into this framework.
 
-Stop here and wait for explicit authorization before beginning any further
-direction.
+Phase 15 candidates (pending authorization):
+
+- Authentication support for connectors (OAuth, API keys, tokens)
+- Network connector implementations (GitHub API, MCP client, HTTP API)
+- GUI connector management panel
+- Connector testing framework
+- Performance optimization for large-scale observation
+- Connector persistence (stateful reconnection)
