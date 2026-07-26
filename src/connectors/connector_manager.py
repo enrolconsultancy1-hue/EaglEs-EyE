@@ -14,6 +14,7 @@ from connectors.events import (
     CONNECTOR_ERROR,
 )
 from connectors.exceptions import ConnectorNotFoundError
+from connectors.evidence_bus import EvidenceBus
 
 
 class ConnectorManager:
@@ -26,6 +27,7 @@ class ConnectorManager:
         )
         self._loader = ConnectorLoader(plugins_dir=plugins_dir)
         self._event_bus = event_bus
+        self._evidence_bus = EvidenceBus(event_bus=event_bus)
         self._plugins_dir = plugins_dir
         self._auto_discover = auto_discover
         self._running = False
@@ -111,6 +113,7 @@ class ConnectorManager:
         connector = self._registry.get(connector_id)
         observations = connector.observe()
         if observations:
+            self._evidence_bus.publish_observation(connector_id, observations)
             self._publish_event(CONNECTOR_OBSERVATION, {
                 "connector_id": connector_id,
                 "count": len(observations),
@@ -120,11 +123,13 @@ class ConnectorManager:
     def collect_evidence(self, connector_id: str):
         connector = self._registry.get(connector_id)
         evidence_list = connector.collect()
-        for evidence in evidence_list:
-            self._publish_event(CONNECTOR_EVIDENCE, {
-                "connector_id": connector_id,
-                "evidence_id": evidence.id,
-            })
+        if evidence_list:
+            self._evidence_bus.publish_evidence(connector_id, evidence_list)
+            for evidence in evidence_list:
+                self._publish_event(CONNECTOR_EVIDENCE, {
+                    "connector_id": connector_id,
+                    "evidence_id": evidence.id,
+                })
         return evidence_list
 
     def heartbeat_connector(self, connector_id: str) -> bool:
@@ -146,6 +151,9 @@ class ConnectorManager:
             except Exception:
                 results[cid] = {"state": "error", "errors": ["health check failed"]}
         return results
+
+    def get_evidence_bus(self):
+        return self._evidence_bus
 
     def get_uptime(self) -> float:
         if self._started_at:

@@ -84,6 +84,37 @@ class KnowledgeGraphService(Service):
             )]
         return {"symbols": symbols, "relationships": relationships}
 
+    def ingest_connector_evidence(self, connector_id, evidence_list):
+        """Ingest connector-sourced evidence as graph relationships.
+
+        Each connector Evidence object is converted into a relationship entry
+        linking the connector source to the evidence target. This provides a
+        unified graph view that spans Python AST analysis and connector evidence.
+        """
+        imported = 0
+        for evidence in evidence_list:
+            target = getattr(evidence, "observation_id", "") or connector_id
+            metadata = {
+                "connector_id": connector_id,
+                "evidence_id": getattr(evidence, "id", ""),
+                "confidence": getattr(evidence.confidence, "score", 1.0) if hasattr(evidence, "confidence") else 1.0,
+            }
+            if hasattr(evidence, "relationships") and evidence.relationships:
+                for rel in evidence.relationships:
+                    rel_metadata = dict(metadata)
+                    rel_metadata["relation_type"] = getattr(rel, "type", "connector_evidence")
+                    self.store.add_relationship(
+                        connector_id, getattr(rel, "target_id", target),
+                        "connector_evidence", rel_metadata,
+                    )
+                    imported += 1
+            else:
+                self.store.add_relationship(
+                    connector_id, target, "connector_evidence", metadata,
+                )
+                imported += 1
+        return {"imported": imported, "connector_id": connector_id}
+
     def resolve_workspace_imports(self, workspace):
         """Attach local-document evidence to imports after a complete index pass.
 

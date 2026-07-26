@@ -1,55 +1,58 @@
-"""Passive, read-only Git evidence collection for watched workspaces."""
+"""DEPRECATED — Passive, read-only Git evidence collection.
+
+This service is deprecated. Use GitConnector (connectors/plugins/git_connector.py)
+which routes through the connector evidence pipeline:
+
+    GitConnector → EvidenceBus → EvidenceIngestionService → Knowledge Store
+
+This shim remains for backward compatibility. It delegates to GitConnector when
+available and prints a deprecation warning on first use.
+"""
 
 import os
-import subprocess
+import warnings
 
 from services.service import Service
 
 
 class GitObserverService(Service):
-    """Observes Git facts without staging, committing, or changing a repository."""
+    """DEPRECATED — Use GitConnector via the connector framework."""
 
     def __init__(self, kernel, command_runner=None):
         super().__init__(kernel)
-        self.evidence = None
-        self.command_runner = command_runner or self._run_git
+        self._git_connector = None
+        self._warned = False
 
     def start(self):
         super().start()
-        self.evidence = self.kernel.get_service("EngineeringEvidenceService")
-        if not self.evidence:
-            raise RuntimeError("GitObserverService requires EngineeringEvidenceService.")
+        connector_svc = self.kernel.get_service("ConnectorService")
+        if connector_svc and connector_svc.get_manager():
+            try:
+                self._git_connector = connector_svc.get_manager().get_connector("git")
+            except Exception:
+                pass
 
     def observe(self, workspace):
-        """Record the current branch, commit, and porcelain status if available."""
-        workspace = os.path.abspath(workspace)
-        status = self.command_runner(workspace, "status", "--porcelain=v1", "--branch")
-        if status["exit_code"] != 0:
-            return {
-                "observed": False, "workspace": workspace, "reason": "git_unavailable_or_not_repository",
-                "exit_code": status["exit_code"], "output": status["output"],
-            }
-        head = self.command_runner(workspace, "rev-parse", "HEAD")
-        branch = self.command_runner(workspace, "branch", "--show-current")
-        payload = {
-            "branch": branch["output"].strip() or None,
-            "head": head["output"].strip() if head["exit_code"] == 0 else None,
-            "status_porcelain": status["output"],
-            "head_exit_code": head["exit_code"],
-        }
-        recorded = self.evidence.record_git(workspace, "snapshot", metadata=payload)
-        return {"observed": True, "workspace": workspace, "evidence": recorded}
-
-    @staticmethod
-    def _run_git(workspace, *arguments):
-        try:
-            result = subprocess.run(
-                ["git", "-C", workspace, *arguments], capture_output=True,
-                text=True, encoding="utf-8", errors="replace", check=False,
+        if not self._warned:
+            warnings.warn(
+                "GitObserverService is deprecated. Use GitConnector via connector framework.",
+                DeprecationWarning, stacklevel=2,
             )
-        except OSError as error:
-            return {"exit_code": 127, "output": str(error)}
+            self._warned = True
+        if self._git_connector:
+            self._git_connector.config["repo_path"] = os.path.abspath(workspace)
+            if self._git_connector.connect():
+                observations = self._git_connector.observe()
+                evidence = self._git_connector.collect()
+                return {
+                    "observed": True,
+                    "workspace": workspace,
+                    "via": "GitConnector",
+                    "observations": len(observations),
+                    "evidence": len(evidence),
+                }
         return {
-            "exit_code": result.returncode,
-            "output": result.stdout if result.returncode == 0 else result.stderr,
+            "observed": False,
+            "workspace": workspace,
+            "reason": "GitConnector unavailable or not connected",
         }

@@ -22,6 +22,10 @@ Measured on the local Windows development environment using Python 3.14:
 | Phase 14 registration speed | 100 connectors registered in under 5 seconds |
 | Phase 14 normalization speed | 100 observations processed in under 5 seconds |
 | Phase 14 heartbeat latency | 100 heartbeats in under 5 seconds |
+| Phase 15 v2.3.0 release-gate regression suite (2026-07-26) | 203 existing + 28 Phase 15 = 231 total tests passed in 6.10 seconds |
+| Phase 15 EventBus error isolation | Erroneous subscriber does not prevent other subscribers from receiving events |
+| Phase 15 evidence pipeline integration | Connector observe → EvidenceBus → EvidenceIngestionService → KnowledgeStore verified |
+| Phase 15 deprecation warnings | All three deprecated services emit warnings without breaking backward compatibility |
 
 The SQLite store uses WAL mode, `synchronous=NORMAL`, foreign-key enforcement,
 and a 5-second busy timeout. This keeps queued indexing practical while each

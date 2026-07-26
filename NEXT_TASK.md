@@ -1,16 +1,20 @@
 # Next Task
 
-Phase 14 is complete and released as `phase14-release` / `v2.2.0`.
+Phase 15 is complete and released as `phase15-release` / `v2.3.0`.
 
-The Connector Framework is now the only approved mechanism for external
-integrations. Every future platform (GitHub, ClickUp, Codex, IDE plugins,
-MCP servers, etc.) must plug into this framework.
+The evidence pipeline now runs from connector observe/collect/normalize/emit
+through EvidenceBus → EvidenceIngestionService → KnowledgeStore → KnowledgeGraph.
 
-Phase 15 candidates (pending authorization):
+All observation flows through the connector framework. The three pre-connector
+observer services are deprecated but still functional.
 
-- Authentication support for connectors (OAuth, API keys, tokens)
+Phase 16 candidates (pending authorization):
+
+- Connector authentication support (OAuth, API keys, tokens)
 - Network connector implementations (GitHub API, MCP client, HTTP API)
 - GUI connector management panel
 - Connector testing framework
 - Performance optimization for large-scale observation
 - Connector persistence (stateful reconnection)
+- Cross-workspace evidence merging in KnowledgeGraph
+- Connector event replay / recovery

@@ -594,6 +594,111 @@ ConnectorService
 MCPToolService  (consumes all above)
 ```
 
+## Phase 15 Unified Evidence & Knowledge Graph (v2.3.0)
+
+Phase 15 connects the Connector Framework evidence pipeline to the Knowledge
+Store, creating a single unified evidence architecture. All observation now
+flows through the connector framework.
+
+### Complete evidence pipeline
+
+```
+Connector
+    ↓
+Observe
+    ↓
+Collect
+    ↓
+Normalize
+    ↓
+Evidence Bus
+    ↓
+Evidence Ingestion Service
+    ↓
+Knowledge Store
+    ↓
+Knowledge Graph
+    ↓
+Retrieval
+    ↓
+Reasoning
+    ↓
+AI Twin
+```
+
+### EvidenceIngestionService
+
+`EvidenceIngestionService` subscribes to the `EvidenceBus` (inside
+`ConnectorManager`) and transforms connector `Evidence` objects into
+`KnowledgeStoreService` event records. It completes the gap that existed in
+Phase 14 where the evidence pipeline terminated at "Emit".
+
+Key methods:
+- `ingest(connector_id, evidence_list)` — manually ingest evidence
+- `get_stats()` — return ingested count
+
+### EvidenceBus
+
+`EvidenceBus` (`connectors/evidence_bus.py`) bridges the connector emit step
+to the ingestion service. It maintains its own subscriber list and also
+publishes to the kernel EventBus for backward compatibility.
+
+### Single observation architecture
+
+Phase 15 eliminates duplicate observation paths by deprecating three pre-
+connector services and routing their behavior through the connector framework:
+
+| Deprecated Service | Replacement | Migration |
+|---|---|---|
+| `GitObserverService` | `GitConnector` | Routes through `GitConnector` when available; prints deprecation warning |
+| `EngineeringEvidenceService` | Evidence pipeline | Writes directly to store AND emits through `EvidenceBus`; prints deprecation warning |
+| `ProcessObserverService` | Evidence pipeline | Delegates to `EngineeringEvidenceService`; prints deprecation warning |
+
+All three services remain importable and callable — existing code continues to
+work — but emit deprecation warnings on first use.
+
+### EventBus hardening
+
+The `EventBus` now supports:
+- **Error isolation** — each subscriber callback is wrapped in try/except;
+  a failing subscriber no longer prevents remaining subscribers from receiving
+  the event.
+- **Unsubscribe** — `subscribe()` returns a token; `unsubscribe(token)` removes
+  the listener. This enables clean service lifecycle management.
+
+### KnowledgeGraphService extension
+
+`KnowledgeGraphService.ingest_connector_evidence(connector_id, evidence_list)`
+accepts connector evidence and creates `connector_evidence` relationship entries
+in the Knowledge Store. This provides a unified graph view that spans Python
+AST analysis and connector evidence.
+
+### New MCP tools
+
+| Tool | Purpose |
+|------|---------|
+| `get_evidence_stats` | Evidence ingestion pipeline statistics |
+| `get_connector_evidence` | Trigger evidence collection from a connector and ingest into the knowledge store |
+
+### Service startup order
+
+In `build_mcp_kernel()`, `EvidenceIngestionService` is registered after
+`ConnectorService` and before `MCPToolService`:
+
+```
+EmbeddingService
+  ↓
+VectorSearchService
+  ↓
+SemanticAwarenessService
+  ↓
+ConnectorService
+  ↓
+EvidenceIngestionService
+  ↓
+MCPToolService  (consumes all above)
+```
+
 ## Boundaries
 
 `ReasoningService` only prepares evidence and proposals; it cannot execute

@@ -1,5 +1,27 @@
 # Changelog
 
+## phase15-release / v2.3.0 — 2026-07-26
+
+Phase 15 complete — Unified Evidence & Knowledge Graph. v2.3.0 connects the
+connector evidence pipeline to the Knowledge Store, creating a single unified
+evidence architecture.
+
+- EventBus hardened: error isolation around subscriber callbacks, unsubscribe token support with `subscribe()` returning a token and `unsubscribe(token)` removing the listener.
+- Created `EvidenceBus` (`connectors/evidence_bus.py`) bridging connector emit to the ingestion pipeline with publish/subscribe semantics.
+- Created `EvidenceIngestionService` (`services/evidence_ingestion_service.py`) subscribing to EvidenceBus, transforming connector Evidence objects into KnowledgeStoreService event records. Exposes `ingest()` and `get_stats()`.
+- Extended `ConnectorManager` to own an EvidenceBus instance and route observe/collect through it.
+- Deprecated three pre-connector observer services with full backward compatibility:
+  - `GitObserverService` — delegates to `GitConnector`, issues DeprecationWarning.
+  - `EngineeringEvidenceService` — also publishes through EvidenceBus, issues DeprecationWarning.
+  - `ProcessObserverService` — delegates to `EngineeringEvidenceService`, issues DeprecationWarning.
+- Extended `KnowledgeGraphService` with `ingest_connector_evidence(connector_id, evidence_list)` creating `connector_evidence` relationship entries.
+- Registered `EvidenceIngestionService` in `build_mcp_kernel()` after `ConnectorService`.
+- 2 new MCP tools: `get_evidence_stats`, `get_connector_evidence`. All 17 existing tools preserved.
+- Zero regressions: 203 existing Phase 6–14 tests continue to pass.
+- Phase 15 release gate: 28 Phase 15 tests passed; 231 total.
+- AI_TWIN_CONSTITUTION.md unchanged.
+- ARCHITECTURE.md, PROJECT_STATUS.md, NEXT_TASK.md, BENCHMARKS.md, CHANGELOG.md updated.
+
 ## phase14-release / v2.2.0 — 2026-07-26
 
 Phase 14 complete — Universal Connector Framework. v2.2.0 introduces the

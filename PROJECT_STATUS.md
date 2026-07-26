@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 14 — Universal Connector Framework (v2.2.0) is complete.
+Phase 15 — Unified Evidence & Knowledge Graph (v2.3.0) is complete.
 
 ---
 
@@ -61,6 +61,25 @@ Completed:
 - Comprehensive Phase 14 test suite: 112 tests covering models, health, manifest, validation, base connector, mock/filesystem/git connectors, registry, manager, SDK, discovery, events, loader, ConnectorService, MCP tools, pipeline, error recovery, performance, dynamic loading, and lifecycle.
 - Zero regressions: all 91 existing Phase 6–13 tests continue to pass unchanged.
 - Version target achieved: v2.2.0.
+
+## Phase 15 — Unified Evidence & Knowledge Graph (v2.3.0)
+
+Completed:
+
+- `EventBus` hardened: error isolation around subscriber callbacks, unsubscribe token support for clean service lifecycle management.
+- `EvidenceBus` (`connectors/evidence_bus.py`) bridging connector emit to the ingestion pipeline with publish/subscribe semantics for evidence and observation events.
+- `EvidenceIngestionService` (`services/evidence_ingestion_service.py`) subscribing to `EvidenceBus`, transforming connector `Evidence` objects into `KnowledgeStoreService` event records. Exposes `ingest()` and `get_stats()`.
+- `ConnectorManager` extended: owns `EvidenceBus` instance, routes `observe_connector()` and `collect_evidence()` through the bus, provides `get_evidence_bus()` accessor.
+- Three pre-connector observer services deprecated with full backward compatibility:
+  - `GitObserverService` — delegates to `GitConnector`, warns on first call.
+  - `EngineeringEvidenceService` — also publishes through `EvidenceBus`, warns on first `record()`.
+  - `ProcessObserverService` — delegates to `EngineeringEvidenceService`, warns on `start()`.
+- `KnowledgeGraphService.ingest_connector_evidence()` method accepting connector evidence and creating `connector_evidence` relationship entries.
+- `mcp_server.py` registers `EvidenceIngestionService` after `ConnectorService` and before `MCPToolService` in `build_mcp_kernel()`.
+- 2 new MCP tools: `get_evidence_stats`, `get_connector_evidence`. All 17 existing tools preserved.
+- Comprehensive Phase 15 test suite: 28 tests covering EventBus hardening, EvidenceBus, EvidenceIngestionService, deprecation warnings, KnowledgeGraph evidence, pipeline integration, and MCP tools.
+- Zero regressions: all 203 existing Phase 6–14 tests continue to pass unchanged.
+- Version target achieved: v2.3.0.
 
 ## Phase 13 — Semantic Intelligence & Autonomous Awareness (v2.1.0)
 
@@ -210,7 +229,7 @@ Completed:
 
 # Latest Measurements
 
-The Phase 13 v2.1.0 release-gate regression suite completed 91 tests.
+The Phase 15 v2.3.0 release-gate regression suite completed 231 tests.
 See `BENCHMARKS.md` for recorded measurements.
 
 Line coverage remains pending installation of the declared development-only
@@ -292,6 +311,8 @@ Current Focus:
 - Phase 11 release recorded as `phase11-release`.
 - Phase 12 release recorded as `phase12-release` / `v2.0.0`.
 - Phase 13 release recorded as `phase13-release` / `v2.1.0`.
+- Phase 14 release recorded as `phase14-release` / `v2.2.0`.
+- Phase 15 release recorded as `phase15-release` / `v2.3.0`.
 
 Current development is complete.
 
@@ -322,9 +343,11 @@ No implementation decision should override higher-level governance documents.
 
 The ROADMAP milestones through v2.0.0 are complete.
 
-Phase 13 (v2.1.0) is the first post-roadmap delivery.
+Phase 15 (v2.3.0) is the latest post-roadmap delivery.
 
-- Phase 13 milestone gates have passed: tests, documentation, architecture, and
+- Phase 14 milestone gates have passed: tests, documentation, architecture, and
   release record are complete.
-- EaglEs EyE v2.1.0 has been released.
+- Phase 15 milestone gates have passed: tests, documentation, architecture, and
+  release record are complete.
+- EaglEs EyE v2.3.0 has been released.
 - Await explicit authorization for any further direction.

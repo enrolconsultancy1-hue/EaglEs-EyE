@@ -18,6 +18,7 @@ class MCPToolService(Service):
         self.vector_search = None
         self.awareness = None
         self.connector = None
+        self.evidence_ingestion = None
 
     def start(self):
         super().start()
@@ -33,6 +34,7 @@ class MCPToolService(Service):
         self.vector_search = self.kernel.get_service("VectorSearchService")
         self.awareness = self.kernel.get_service("SemanticAwarenessService")
         self.connector = self.kernel.get_service("ConnectorService")
+        self.evidence_ingestion = self.kernel.get_service("EvidenceIngestionService")
         print("[MCP TOOLS] Ready.")
 
     def list_tools(self):
@@ -71,6 +73,10 @@ class MCPToolService(Service):
              "description": "Get detailed status for a specific connector."},
             {"name": "get_connector_health_all", "inputSchema": {"type": "object", "properties": {}},
              "description": "Get health status for all registered connectors."},
+            {"name": "get_evidence_stats", "inputSchema": {"type": "object", "properties": {}},
+             "description": "Get evidence ingestion pipeline statistics."},
+            {"name": "get_connector_evidence", "inputSchema": {"type": "object", "properties": {"connector_id": {"type": "string"}, "count": {"type": "integer"}}, "required": ["connector_id"]},
+             "description": "Trigger evidence collection from a connector and ingest into the knowledge store."},
         ]
 
     def call_tool(self, name, arguments):
@@ -196,4 +202,19 @@ class MCPToolService(Service):
                 return {"error": "ConnectorService is unavailable"}
             health = self.connector.get_manager().check_health_all()
             return {"health": health}
+        if name == "get_evidence_stats":
+            if not self.evidence_ingestion:
+                return {"error": "EvidenceIngestionService is unavailable"}
+            return {"stats": self.evidence_ingestion.get_stats()}
+        if name == "get_connector_evidence":
+            if not self.connector or not self.connector.get_manager():
+                return {"error": "ConnectorService is unavailable"}
+            connector_id = arguments.get("connector_id", "")
+            if not connector_id:
+                return {"error": "connector_id is required"}
+            try:
+                evidence = self.connector.get_manager().collect_evidence(connector_id)
+                return {"evidence_count": len(evidence), "connector_id": connector_id}
+            except Exception as e:
+                return {"error": str(e)}
         return {"error": "Unknown tool: " + str(name)}
