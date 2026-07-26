@@ -1,5 +1,29 @@
 # Changelog
 
+## Project Twin Discovery Connector — 2026-07-26
+
+First v3.1 connector expansion: extends the frozen v3.0.0 platform with
+real external project observation and Twin creation.
+
+- **LocalProjectConnector** (`connectors/plugins/local_project_connector.py`):
+  Implements Connector ABC, discovers project identity/type/stack/git/deps
+  from a local folder. Detects 10 project types, 14 languages, 8 frameworks.
+  Complies with Universal Observation Policy (discover/rank/select surfaces).
+- **ProjectTwinDiscoveryService** (`services/project_twin_discovery_service.py`):
+  Orchestrates discovery via LocalProjectConnector, publishes 7 EventBus
+  notification events (CONNECTED → SCAN → IDENTIFIED → STACK → GIT →
+  DEPENDENCIES → TWIN CREATED), stores twin JSON in `memory/twins/`,
+  indexes knowledge via KnowledgeStoreService.
+- **MCP tool `discover_project_twin`**: discovers a local project folder and
+  returns a complete Project Twin with notifications, twin path, and
+  discovery data.
+- **Service registration**: ProjectTwinDiscoveryService registered in
+  mcp_server.py after UniversalTwinReport, before MCPToolService.
+- **Zero regressions**: all 403 existing tests continue to pass.
+- **28 new Phase 19 tests**: 431 total passing tests.
+- **41 MCP tools total** (40 existing + 1 new).
+- No frozen files modified.
+
 ## Architecture Freeze — 2026-07-26
 
 The AI Twin Core is permanently frozen as of v3.0.0.

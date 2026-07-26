@@ -11,12 +11,12 @@ product roadmap in [ROADMAP.md](ROADMAP.md#product-roadmap--capability-driven).
 
 ## Current Version
 
-**v3.0.0 — Universal AI Project Twin**
+**v3.1-dev — Project Twin Discovery Connector**
 
-Phase 18 delivered the first stable **Universal AI Project Twin** — a
-feature-frozen, fully integrated, and validated release that coordinates every
-architectural capability into one coherent AI Twin of any project. No new
-foundational layers were introduced.
+The AI Twin Core remains frozen at v3.0.0. The **Project Twin Discovery
+Connector** extends the platform with the first external project observation
+and Twin creation capability — a LocalProjectConnector plugin, a
+ProjectTwinDiscoveryService, and a discover_project_twin MCP tool.
 
 ---
 
@@ -262,7 +262,7 @@ Completed:
 
 # Latest Measurements
 
-The v3.0.0 release-gate regression suite completed **403 tests**.
+The v3.1-dev regression suite completes **431 tests** (403 existing + 28 Phase 19).
 See `BENCHMARKS.md` for recorded measurements.
 
 Line coverage remains pending installation of the declared development-only

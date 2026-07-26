@@ -31,6 +31,7 @@ class MCPToolService(Service):
         self.twin_validator = None
         self.unified_twin = None
         self.twin_report = None
+        self.project_twin = None
 
     def start(self):
         super().start()
@@ -59,6 +60,7 @@ class MCPToolService(Service):
         self.twin_validator = self.kernel.get_service("TwinIntegrityValidator")
         self.unified_twin = self.kernel.get_service("UnifiedProjectTwin")
         self.twin_report = self.kernel.get_service("UniversalTwinReport")
+        self.project_twin = self.kernel.get_service("ProjectTwinDiscoveryService")
         print("[MCP TOOLS] Ready.")
 
     def list_tools(self):
@@ -143,6 +145,8 @@ class MCPToolService(Service):
              "description": "Execute reasoning through the unified AI Twin interface."},
             {"name": "ai_twin_report", "inputSchema": {"type": "object", "properties": {"workspace_id": {"type": "string"}}},
              "description": "Generate a complete, evidence-backed Universal AI Twin Report."},
+            {"name": "discover_project_twin", "inputSchema": {"type": "object", "properties": {"project_path": {"type": "string"}}, "required": ["project_path"]},
+             "description": "Discover a local project folder and create a Project Twin with identity, stack, dependencies, and repository detection."},
         ]
 
     def call_tool(self, name, arguments):
@@ -496,4 +500,12 @@ class MCPToolService(Service):
             if not self.twin_report:
                 return {"error": "UniversalTwinReport unavailable"}
             return {"ai_twin_report": self.twin_report.generate(arguments.get("workspace_id"))}
+        if name == "discover_project_twin":
+            if not self.project_twin:
+                return {"error": "ProjectTwinDiscoveryService unavailable"}
+            project_path = arguments.get("project_path", "")
+            if not project_path:
+                return {"error": "project_path is required"}
+            result = self.project_twin.discover_project(project_path)
+            return {"discovery": result}
         return {"error": "Unknown tool: " + str(name)}
