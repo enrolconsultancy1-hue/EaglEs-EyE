@@ -1,5 +1,36 @@
 # Changelog
 
+## phase18-release / v3.0.0 — 2026-07-26
+
+Phase 18 complete — Universal AI Project Twin. v3.0.0 is the final roadmap
+milestone and permanent architectural baseline. Feature-frozen: no new
+foundational layers, no redesigns. All work was integration, stabilization,
+validation, and polish.
+
+- **AITwinOrchestrator** (`services/ai_twin_orchestrator.py`): Coordinates all
+  services into a single coherent AI Twin lifecycle. Exposes 8 stable Dashboard
+  APIs: twin_status, twin_health, connector_status_summary, observation_status,
+  reasoning_status, sync_status, project_health, evidence_metrics.
+- **TwinIntegrityValidator** (`services/twin_integrity_validator.py`): 6
+  consistency checks — Knowledge Graph, evidence, relationships, connectors,
+  sync, provenance integrity. All-in-one `check_all()` method.
+- **UnifiedProjectTwin** (`services/unified_project_twin.py`): One coherent
+  representation integrating files, git, docs, evidence, tasks, decisions,
+  relationships, architecture, history, risks, health, and connectors. Methods:
+  overview, project_summary, connector_twin, reasoning_twin.
+- **UniversalTwinReport** (`services/universal_twin_report.py`): Complete,
+  evidence-backed AI Twin Report covering overview, health, integrity, status,
+  blockers, bottlenecks, stale work, architecture drift. Summary mode for quick
+  access.
+- **8 new MCP tools**: ai_twin_status, ai_twin_health, ai_twin_integrity,
+  ai_twin_overview, ai_twin_summary, ai_twin_connectors, ai_twin_reasoning,
+  ai_twin_report. All 32 existing tools preserved. **40 tools total**.
+- **Service registration**: 4 Phase 18 services registered in build_mcp_kernel()
+  after ExplainableAIService, before MCPToolService. MCP protocol version 3.0.0.
+- **Production hardening**: Removed empty `services/watcher_service.py` (0 lines).
+- **Zero regressions**: 356 existing Phase 1–17 tests continue to pass.
+- **47 new Phase 18 tests**: 403 total passing tests with zero regressions.
+
 ## phase17-release / v2.5.0 — 2026-07-26
 
 Phase 17 complete — Autonomous Project Intelligence. v2.5.0 transforms EaglEs

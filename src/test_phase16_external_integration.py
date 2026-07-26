@@ -465,9 +465,9 @@ class Phase16McpToolTests(unittest.TestCase):
             result = self.tool_svc.call_tool(tool, {})
             self.assertIn("error", result, f"{tool} should return error when unavailable")
 
-    def test_all_tools_32_total(self):
+    def test_all_tools_40_total(self):
         tools = self.tool_svc.list_tools()
-        self.assertEqual(len(tools), 32)
+        self.assertEqual(len(tools), 40)
 
 
 class Phase16SDKRunPipelineFixTests(unittest.TestCase):

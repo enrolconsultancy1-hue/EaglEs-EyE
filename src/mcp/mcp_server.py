@@ -40,6 +40,10 @@ from services.root_cause_analysis_service import RootCauseAnalysisService
 from services.impact_analysis_service import ImpactAnalysisService
 from services.decision_lineage_service import DecisionLineageService
 from services.explainable_ai_service import ExplainableAIService
+from services.ai_twin_orchestrator import AITwinOrchestrator
+from services.twin_integrity_validator import TwinIntegrityValidator
+from services.unified_project_twin import UnifiedProjectTwin
+from services.universal_twin_report import UniversalTwinReport
 
 
 SUPPORTED_PROTOCOL_VERSION = "2025-03-26"
@@ -78,7 +82,7 @@ class MCPServer:
             "result": {
                 "protocolVersion": SUPPORTED_PROTOCOL_VERSION,
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "EaglEs EyE MCP", "version": "2.5.0"},
+                "serverInfo": {"name": "EaglEs EyE MCP", "version": "3.0.0"},
             },
         }
 
@@ -144,6 +148,10 @@ def build_mcp_kernel(memory_path=None):
     impact = ImpactAnalysisService(kernel)
     decision_lineage = DecisionLineageService(kernel)
     explainable = ExplainableAIService(kernel)
+    ai_twin = AITwinOrchestrator(kernel)
+    twin_validator = TwinIntegrityValidator(kernel)
+    unified_twin = UnifiedProjectTwin(kernel)
+    twin_report = UniversalTwinReport(kernel)
     mcp_tool = MCPToolService(kernel)
     services = (store, sym_idx, kg, indexer, retrieval, ctx, xref, arch, docs,
                 ws, timeline, sessions, causal, evolution, decisions, cognitive,
@@ -151,6 +159,7 @@ def build_mcp_kernel(memory_path=None):
                 evidence_ingestion, connector_scheduler,
                 confidence_engine, reasoning_engine, project_intelligence,
                 root_cause, impact, decision_lineage, explainable,
+                ai_twin, twin_validator, unified_twin, twin_report,
                 mcp_tool)
     for s in services:
         kernel.register_service(s)

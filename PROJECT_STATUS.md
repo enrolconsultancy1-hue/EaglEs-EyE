@@ -2,7 +2,13 @@
 
 ## Current Phase
 
-Phase 17 — Autonomous Project Intelligence (v2.5.0) is complete.
+Phase 18 — Universal AI Project Twin (v3.0.0) is complete.
+
+Phase 18 delivers the first stable **Universal AI Project Twin** — a
+feature-frozen, fully integrated, and validated release that coordinates every
+architectural capability into one coherent AI Twin of any project. No new
+foundational layers were introduced. v3.0.0 is the permanent architectural
+baseline.
 
 ---
 

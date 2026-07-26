@@ -1076,6 +1076,82 @@ explanations without inferring hidden reasoning.
 `MCPToolService` defines JSON-shaped domain tools, deliberately separate from
 any future MCP transport/server.
 
+---
+
+## Phase 18 — Universal AI Project Twin (v3.0.0, 2026-07-26)
+
+Phase 18 delivers the first stable **Universal AI Project Twin**. It is
+feature-frozen: no new foundational layers, no redesign of Connector Framework,
+Knowledge Graph, Evidence Pipeline, or Reasoning Engine. All components are
+`Service` subclasses consuming existing services.
+
+### New architecture (all services)
+
+```
+[Phase 1–17 services unchanged]
+  │
+  ├── AITwinOrchestrator (services/ai_twin_orchestrator.py)
+  │     Coordinates all services into single lifecycle. Exposes 8 Dashboard
+  │     APIs: twin_status, twin_health, connector_status_summary,
+  │     observation_status, reasoning_status, sync_status, project_health,
+  │     evidence_metrics. Every result preserves URP provenance.
+  │
+  ├── TwinIntegrityValidator (services/twin_integrity_validator.py)
+  │     6 consistency checks: KG, evidence, relationships, connectors, sync,
+  │     provenance. All-in-one check_all() method.
+  │
+  ├── UnifiedProjectTwin (services/unified_project_twin.py)
+  │     One coherent representation integrating files, git, docs, evidence,
+  │     tasks, decisions, relationships, architecture, history, risks, health,
+  │     and connectors — regardless of origin.
+  │
+  ├── UniversalTwinReport (services/universal_twin_report.py)
+  │     Complete AI Twin Report: overview, health, integrity, status, blockers,
+  │     bottlenecks, stale work, architecture drift. Entirely evidence-backed.
+  │     Summary mode for quick access.
+  │
+  └── MCPToolService (services/mcp_tool_service.py)
+        40 tools total (32 existing + 8 new):
+        ai_twin_status, ai_twin_health, ai_twin_integrity,
+        ai_twin_overview, ai_twin_summary, ai_twin_connectors,
+        ai_twin_reasoning, ai_twin_report
+```
+
+### Service registration order
+
+Phase 18 services are registered in `build_mcp_kernel()` after
+`ExplainableAIService` and before `MCPToolService`:
+
+```
+... ExplainableAIService →
+  AITwinOrchestrator → TwinIntegrityValidator →
+  UnifiedProjectTwin → UniversalTwinReport →
+  MCPToolService
+```
+
+### MCP protocol version
+
+Updated to `3.0.0` in `mcp_server.py` initialize response.
+
+### Production hardening
+
+- Removed `services/watcher_service.py` (0-line empty stub, never functional).
+
+### Universal AI Project Twin acceptance test
+
+Given any supported project ecosystem and appropriate authorization,
+EaglEs EyE can:
+1. Discover the richest authorized observation surfaces (UOP — every connctor)
+2. Continuously synchronize evidence (SyncEngine + ConnectorSchedulerService)
+3. Maintain a unified project knowledge graph (KnowledgeGraphService)
+4. Reason across all collected evidence (ReasoningEngine, 7 methods)
+5. Explain every conclusion with complete provenance (URP — every result)
+6. Present a single coherent AI Twin (AITwinOrchestrator + Unified +
+   Report)
+7. All without requiring changes to core architecture (platform independence)
+
+### 403 tests passing, zero regressions
+
 All autonomous capabilities must remain:
 
 - Evidence-backed.

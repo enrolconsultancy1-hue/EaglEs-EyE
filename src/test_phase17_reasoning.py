@@ -740,7 +740,7 @@ class TestMCPToolsPhase17(unittest.TestCase):
                   "connector_metrics", "connector_last_sync", "connector_health_details"]
         for name in legacy:
             self.assertIn(name, names, "Legacy tool removed: " + name)
-        self.assertEqual(len(names), 32)  # 24 legacy + 8 new
+        self.assertEqual(len(names), 40)  # 24 legacy + 8 Phase 17 + 8 Phase 18
 
     def test_reasoning_trace_unknown_mode(self):
         result = self.mcp.call_tool("reasoning_trace", {"query": "test", "mode": "invalid"})
@@ -782,7 +782,7 @@ class TestMCPServerRegistration(unittest.TestCase):
         server = MCPServer()
         # Simulate initialize
         response = server.handle_message({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-03-26"}})
-        self.assertEqual(response["result"]["serverInfo"]["version"], "2.5.0")
+        self.assertEqual(response["result"]["serverInfo"]["version"], "3.0.0")
         for s in reversed(services):
             s.stop()
 
@@ -791,7 +791,7 @@ class TestMCPServerRegistration(unittest.TestCase):
         kernel, services = build_mcp_kernel(tempfile.mkdtemp())
         mcp_tool = kernel.get_service("MCPToolService")
         tools = mcp_tool.list_tools()
-        self.assertEqual(len(tools), 32)
+        self.assertEqual(len(tools), 40)
         for s in reversed(services):
             s.stop()
 

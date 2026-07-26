@@ -1,22 +1,19 @@
 # Next Task
 
-Phase 17 is complete and released as `phase17-release` / `v2.5.0`.
+Phase 18 is complete and released as `phase18-release` / `v3.0.0`.
 
-The Autonomous Project Intelligence Phase transforms EaglEs EyE from an
-evidence collection platform into an evidence reasoning platform. The
-ReasoningEngine is the single entry point for all reasoning, routing to
-sub-engines for project intelligence, root cause analysis, impact analysis,
-decision lineage, confidence scoring, and explainable AI.
+The Universal AI Project Twin Phase transforms EaglEs EyE into a stable,
+feature-frozen Universal AI Project Twin. AITwinOrchestrator coordinates all
+services, TwinIntegrityValidator validates consistency, UnifiedProjectTwin
+presents a single coherent representation, and UniversalTwinReport generates
+complete evidence-backed reports. 40 MCP tools, 403 tests passing.
 
-The Universal Reasoning Policy ensures every conclusion preserves complete
-evidence provenance — source connectors, observation surfaces, evidence IDs,
-confidence scores, reasoning traces, supporting relationships, and timestamps.
+**v3.0.0 is the permanent architectural baseline.** The roadmap is complete.
+No new foundational layers will be introduced. Future releases extend through
+connectors and reasoning improvements.
 
-Phase 18 candidates (pending authorization):
+## Future candidates (post-v3.0.0, no roadmap commitment)
 
-- **Universal AI Project Twin (v3.0.0)** — the Phase 18 mission: observe,
-  understand, synchronize, and reason across any present or future project
-  ecosystem through standardized connectors
 - Additional connector implementations (GitLab, Bitbucket, Jira, Slack, Notion)
 - Webhook listener server implementation
 - GUI connector management panel (Mission Control connectors view)

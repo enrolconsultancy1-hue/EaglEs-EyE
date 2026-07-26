@@ -27,6 +27,10 @@ class MCPToolService(Service):
         self.decision_lineage = None
         self.confidence = None
         self.explainable = None
+        self.ai_twin = None
+        self.twin_validator = None
+        self.unified_twin = None
+        self.twin_report = None
 
     def start(self):
         super().start()
@@ -51,6 +55,10 @@ class MCPToolService(Service):
         self.decision_lineage = self.kernel.get_service("DecisionLineageService")
         self.confidence = self.kernel.get_service("ConfidenceEngine")
         self.explainable = self.kernel.get_service("ExplainableAIService")
+        self.ai_twin = self.kernel.get_service("AITwinOrchestrator")
+        self.twin_validator = self.kernel.get_service("TwinIntegrityValidator")
+        self.unified_twin = self.kernel.get_service("UnifiedProjectTwin")
+        self.twin_report = self.kernel.get_service("UniversalTwinReport")
         print("[MCP TOOLS] Ready.")
 
     def list_tools(self):
@@ -119,6 +127,22 @@ class MCPToolService(Service):
              "description": "Trace decision lineage from decision ID or list all lineages filtered by workspace/session."},
             {"name": "dependency_graph", "inputSchema": {"type": "object", "properties": {"path": {"type": "string"}, "depth": {"type": "integer", "default": 2}}, "required": ["path"]},
              "description": "Analyze dependencies for a given path with confidence propagation."},
+            {"name": "ai_twin_status", "inputSchema": {"type": "object", "properties": {}},
+             "description": "Get overall AI Twin status with state, confidence, and evidence counts."},
+            {"name": "ai_twin_health", "inputSchema": {"type": "object", "properties": {}},
+             "description": "Get AI Twin health assessment with health status and confidence."},
+            {"name": "ai_twin_integrity", "inputSchema": {"type": "object", "properties": {"all": {"type": "boolean"}}},
+             "description": "Run integrity checks on KG, evidence, relationships, connectors, sync, and provenance."},
+            {"name": "ai_twin_overview", "inputSchema": {"type": "object", "properties": {}},
+             "description": "Get a unified overview of the AI Twin covering all integrated data sources."},
+            {"name": "ai_twin_summary", "inputSchema": {"type": "object", "properties": {}},
+             "description": "Get a quick summary of AI Twin health, status, and integrity."},
+            {"name": "ai_twin_connectors", "inputSchema": {"type": "object", "properties": {}},
+             "description": "Get connector twin status across all registered connectors."},
+            {"name": "ai_twin_reasoning", "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}, "mode": {"type": "string", "enum": ["cross_connector", "dependencies", "timeline", "historical", "evidence_correlation"]}}},
+             "description": "Execute reasoning through the unified AI Twin interface."},
+            {"name": "ai_twin_report", "inputSchema": {"type": "object", "properties": {"workspace_id": {"type": "string"}}},
+             "description": "Generate a complete, evidence-backed Universal AI Twin Report."},
         ]
 
     def call_tool(self, name, arguments):
@@ -431,4 +455,45 @@ class MCPToolService(Service):
             depth = int(arguments.get("depth", 2))
             result = self.reasoning.reason_dependencies(path, depth)
             return {"dependency_graph": result}
+        if name == "ai_twin_status":
+            if not self.ai_twin:
+                return {"error": "AITwinOrchestrator unavailable"}
+            return {"ai_twin_status": self.ai_twin.twin_status()}
+        if name == "ai_twin_health":
+            if not self.ai_twin:
+                return {"error": "AITwinOrchestrator unavailable"}
+            return {"ai_twin_health": self.ai_twin.twin_health()}
+        if name == "ai_twin_integrity":
+            if not self.twin_validator:
+                return {"error": "TwinIntegrityValidator unavailable"}
+            if arguments.get("all"):
+                return {"ai_twin_integrity": self.twin_validator.check_all()}
+            return {"ai_twin_integrity": {
+                "kg_consistency": self.twin_validator.check_kg_consistency(),
+                "evidence_consistency": self.twin_validator.check_evidence_consistency(),
+                "relationship_consistency": self.twin_validator.check_relationship_consistency(),
+            }}
+        if name == "ai_twin_overview":
+            if not self.unified_twin:
+                return {"error": "UnifiedProjectTwin unavailable"}
+            return {"ai_twin_overview": self.unified_twin.overview()}
+        if name == "ai_twin_summary":
+            if not self.twin_report:
+                return {"error": "UniversalTwinReport unavailable"}
+            return {"ai_twin_summary": self.twin_report.generate_summary(arguments.get("workspace_id"))}
+        if name == "ai_twin_connectors":
+            if not self.unified_twin:
+                return {"error": "UnifiedProjectTwin unavailable"}
+            return {"ai_twin_connectors": self.unified_twin.connector_twin()}
+        if name == "ai_twin_reasoning":
+            if not self.unified_twin:
+                return {"error": "UnifiedProjectTwin unavailable"}
+            query = arguments.get("query", "")
+            mode = arguments.get("mode", "evidence_correlation")
+            result = self.unified_twin.reasoning_twin(query if query else None, mode)
+            return {"ai_twin_reasoning": result}
+        if name == "ai_twin_report":
+            if not self.twin_report:
+                return {"error": "UniversalTwinReport unavailable"}
+            return {"ai_twin_report": self.twin_report.generate(arguments.get("workspace_id"))}
         return {"error": "Unknown tool: " + str(name)}
