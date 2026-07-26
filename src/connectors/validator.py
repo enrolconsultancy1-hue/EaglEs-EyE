@@ -4,7 +4,14 @@ from connectors.exceptions import ConnectorValidationError
 VALID_CAPABILITIES = {
     "filesystem", "git", "tasks", "commits", "issues", "documents",
     "chat", "email", "calendar", "mcp", "api", "database", "terminal",
-    "logs", "artifacts", "knowledge",
+    "logs", "artifacts", "knowledge", "network", "webhook",
+}
+
+VALID_OBSERVATION_SURFACES = {
+    "native_connector", "mcp_server", "extension_sdk", "official_api",
+    "webhook", "event_stream", "local_workspace", "git_repository",
+    "project_files", "build_artifacts", "config_files", "logs",
+    "local_database", "other",
 }
 
 VALID_PERMISSIONS = {
@@ -76,4 +83,7 @@ class ManifestValidator:
         errors.extend(cap_errors)
         perm_errors = PermissionValidator.validate_permissions(manifest.permissions)
         errors.extend(perm_errors)
+        for surface in manifest.observation_surfaces:
+            if surface not in VALID_OBSERVATION_SURFACES:
+                errors.append(f"Unknown observation surface: {surface}")
         return errors

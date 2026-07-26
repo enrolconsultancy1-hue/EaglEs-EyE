@@ -8,6 +8,7 @@ from connectors.models import (
     Artifact, TraceInformation, Timestamp,
 )
 from connectors.exceptions import ConnectorCapabilityError, ConnectorPermissionError
+from connectors.observation_discovery import ObservationDiscoveryEngine, ObservationSurface
 
 
 class ConnectorSDK:
@@ -44,7 +45,7 @@ class ConnectorSDK:
         all_evidence = []
         observations = connector.observe()
         for obs in observations:
-            collected = connector.collect() if hasattr(connector, 'collect') else []
+            collected = connector.collect()
             items = collected if collected else [obs]
             for item in items:
                 raw = item if isinstance(item, RawPayload) else getattr(item, 'raw', RawPayload.from_dict({}))
@@ -82,6 +83,21 @@ class ConnectorSDK:
             raise ConnectorPermissionError(
                 f"Connector '{connector.id}' does not have permission: {permission}"
             )
+
+
+    @staticmethod
+    def run_observation_discovery(connector: Connector) -> dict:
+        engine = ObservationDiscoveryEngine()
+        surfaces = connector.discover_observation_surfaces()
+        ranked = connector.rank_observation_surfaces()
+        pipeline = connector.select_observation_pipeline()
+        return {
+            "connector_id": connector.id,
+            "surfaces": [str(s) if hasattr(s, 'value') else str(s) for s in surfaces],
+            "ranked": [(str(s), q.score) for s, q in ranked] if ranked else [],
+            "pipeline": [str(s) if hasattr(s, 'value') else str(s) for s in pipeline],
+            "active_surfaces": [str(s) if hasattr(s, 'value') else str(s) for s in connector.get_active_surfaces()],
+        }
 
 
 def register_connector_cls(connector_cls, registry, config: dict = None,

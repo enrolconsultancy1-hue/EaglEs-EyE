@@ -1,20 +1,25 @@
 # Next Task
 
-Phase 15 is complete and released as `phase15-release` / `v2.3.0`.
+Phase 16 is complete and released as `phase16-release` / `v2.4.0`.
 
-The evidence pipeline now runs from connector observe/collect/normalize/emit
-through EvidenceBus → EvidenceIngestionService → KnowledgeStore → KnowledgeGraph.
+The External Project Integration Layer provides reusable infrastructure for
+all future connectors: authentication, webhooks, sync engine, scheduler,
+metrics, REST base, ObservationDiscoveryEngine, and the GitHub connector plugin.
 
-All observation flows through the connector framework. The three pre-connector
-observer services are deprecated but still functional.
+The Universal Observation Policy (4 abstract methods on Connector ABC) is now
+mandatory for every connector — surfaces are discovered, ranked, and selected
+automatically.
 
-Phase 16 candidates (pending authorization):
+Phase 17 candidates (pending authorization):
 
-- Connector authentication support (OAuth, API keys, tokens)
-- Network connector implementations (GitHub API, MCP client, HTTP API)
+- Additional connector implementations (GitLab, Bitbucket, Jira, Slack, Notion)
 - GUI connector management panel
-- Connector testing framework
-- Performance optimization for large-scale observation
-- Connector persistence (stateful reconnection)
+- Connector testing framework / integration test harness
+- Performance optimization for large-scale observation (rate limiting, caching)
+- Connector persistence (stateful reconnection, SQLite SyncStore)
 - Cross-workspace evidence merging in KnowledgeGraph
 - Connector event replay / recovery
+- Webhook listener server implementation
+- OAuth token refresh flow
+- CLI connector management commands (`eagle connector list|sync|status`)
+- Multi-connector orchestration (coordinated sync across connectors)

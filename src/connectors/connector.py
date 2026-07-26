@@ -56,6 +56,27 @@ class Connector(ABC):
         self._publish_event("CONNECTOR_STOPPED")
         return True
 
+    # --- Universal Observation Policy ---
+
+    @abstractmethod
+    def discover_observation_surfaces(self) -> list:
+        ...
+
+    @abstractmethod
+    def rank_observation_surfaces(self) -> list:
+        ...
+
+    @abstractmethod
+    def select_observation_pipeline(self) -> list:
+        ...
+
+    def get_active_surfaces(self) -> list:
+        return self.select_observation_pipeline()
+
+    def build_observation_pipeline(self) -> list:
+        ranked = self.rank_observation_surfaces()
+        return self.select_observation_pipeline()
+
     # --- Data pipeline ---
 
     @abstractmethod

@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 15 — Unified Evidence & Knowledge Graph (v2.3.0) is complete.
+Phase 16 — External Project Integration Layer (v2.4.0) is complete.
 
 ---
 
@@ -80,6 +80,29 @@ Completed:
 - Comprehensive Phase 15 test suite: 28 tests covering EventBus hardening, EvidenceBus, EvidenceIngestionService, deprecation warnings, KnowledgeGraph evidence, pipeline integration, and MCP tools.
 - Zero regressions: all 203 existing Phase 6–14 tests continue to pass unchanged.
 - Version target achieved: v2.3.0.
+
+## Phase 16 — External Project Integration Layer (v2.4.0)
+
+Completed:
+
+- **Universal Observation Policy**: 4 abstract methods on `Connector` ABC: `discover_observation_surfaces()`, `rank_observation_surfaces()`, `select_observation_pipeline()`, `get_active_surfaces()`. All existing connectors (Filesystem, Git, Mock) implement them.
+- **ObservationDiscoveryEngine** (`connectors/observation_discovery.py`): Surface quality scoring, preference ordering, automatic pipeline selection.
+- **Connector Authentication** (`connectors/auth/__init__.py`): `PATAuth`, `OAuthAuth`, `APIKeyAuth`, `BearerTokenAuth` with secure credential handling, sanitization, and validation.
+- **Webhook Framework** (`connectors/webhooks/__init__.py`): `WebhookRegistry`, `SignatureVerifier` (HMAC-SHA256/SHA1), `WebhookQueue`, `ReplayGuard` (idempotency), `WebhookHandler`.
+- **SyncEngine** (`connectors/sync.py`): `initial_sync()`, `delta_sync()`, `resume()`, `detect_conflict()` with checkpoint save/load via `SyncStore`.
+- **ConnectorSchedulerService** (`services/connector_scheduler_service.py`): Background periodic synchronization with exponential backoff, manual trigger, daemon thread. Disabled by default.
+- **MetricsCollector** (`connectors/metrics.py`): Thread-safe per-connector counters for sync count, API requests, failures, retries, evidence, observations, uptime, throughput.
+- **RESTConnector** (`connectors/rest_connector.py`): Reusable base class for REST-based project systems with pagination (Link header / page-based), retry policy (exponential backoff), health check, auth setup.
+- **GitHubConnector** (`connectors/plugins/github_connector.py`): 9 capabilities — repository metadata, branches, commits, pull requests, issues, releases, tags, contributors, events. Implements all 4 Universal Observation Policy methods with `official_api` and `git_repository` surfaces.
+- **Manifest extension**: 5 new fields — `observation_surfaces`, `preferred_surface`, `supports_multi_surface`, `supports_incremental_sync`, `supports_realtime`.
+- **SDK extension**: `run_observation_discovery()` static method on `ConnectorSDK`.
+- **Validator extension**: `VALID_OBSERVATION_SURFACES` list, `"network"` and `"webhook"` capabilities added.
+- **5 new MCP tools**: `github_connector_status`, `connector_sync`, `connector_metrics`, `connector_last_sync`, `connector_health_details`. All 19 existing tools preserved. 24 tools total.
+- **`ConnectorSchedulerService`** registered in `build_mcp_kernel()` after `EvidenceIngestionService`, before `MCPToolService`.
+- **Sample configs**: `github_connector.yaml.example` and `webhook_listener.yaml.example` with no secrets.
+- **42 Phase 16 tests**: covering ObservationDiscovery (5), Auth (6), Webhooks (4), Sync (6), Metrics (3), Connector surfaces (5), Manifest extension (3), Scheduler (4), MCP tools (4), SDK fix (1), Phase 15.1 verification (2).
+- Zero regressions: all 231 existing Phase 6–15 tests continue to pass unchanged. 273 total.
+- Version target achieved: v2.4.0.
 
 ## Phase 13 — Semantic Intelligence & Autonomous Awareness (v2.1.0)
 
@@ -229,7 +252,7 @@ Completed:
 
 # Latest Measurements
 
-The Phase 15 v2.3.0 release-gate regression suite completed 231 tests.
+The Phase 16 v2.4.0 release-gate regression suite completed 273 tests.
 See `BENCHMARKS.md` for recorded measurements.
 
 Line coverage remains pending installation of the declared development-only
@@ -246,9 +269,7 @@ Line coverage remains pending installation of the declared development-only
 
 - Unresolved names are recorded as symbolic targets.
 
-- Connector authentication (OAuth, API keys, tokens) not yet implemented.
-
-- Network-based connectors (GitHub API, MCP client, HTTP API) not yet implemented.
+- Network-based connectors beyond GitHub (MCP client, HTTP API) not yet implemented.
 
 - Connector persistence (stateful reconnection across restarts) not yet implemented.
 
@@ -313,6 +334,7 @@ Current Focus:
 - Phase 13 release recorded as `phase13-release` / `v2.1.0`.
 - Phase 14 release recorded as `phase14-release` / `v2.2.0`.
 - Phase 15 release recorded as `phase15-release` / `v2.3.0`.
+- Phase 16 release recorded as `phase16-release` / `v2.4.0`.
 
 Current development is complete.
 
@@ -343,11 +365,11 @@ No implementation decision should override higher-level governance documents.
 
 The ROADMAP milestones through v2.0.0 are complete.
 
-Phase 15 (v2.3.0) is the latest post-roadmap delivery.
+Phase 16 (v2.4.0) is the latest post-roadmap delivery.
 
-- Phase 14 milestone gates have passed: tests, documentation, architecture, and
-  release record are complete.
 - Phase 15 milestone gates have passed: tests, documentation, architecture, and
   release record are complete.
-- EaglEs EyE v2.3.0 has been released.
+- Phase 16 milestone gates have passed: tests, documentation, architecture, and
+  release record are complete.
+- EaglEs EyE v2.4.0 has been released.
 - Await explicit authorization for any further direction.

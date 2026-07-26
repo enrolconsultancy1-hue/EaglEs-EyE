@@ -21,6 +21,11 @@ class ConnectorManifest:
     dependencies: list = field(default_factory=list)
     entry_point: str = ""
     config_schema: dict = field(default_factory=dict)
+    observation_surfaces: list = field(default_factory=list)
+    preferred_surface: str = "auto"
+    supports_multi_surface: bool = False
+    supports_incremental_sync: bool = False
+    supports_realtime: bool = False
 
     def supports_capability(self, capability: str) -> bool:
         return capability in self.capabilities
@@ -98,4 +103,9 @@ class ManifestParser:
             dependencies=data.get("dependencies", []),
             entry_point=data.get("entry_point", ""),
             config_schema=data.get("config_schema", {}),
+            observation_surfaces=data.get("observation_surfaces", []),
+            preferred_surface=data.get("preferred_surface", "auto"),
+            supports_multi_surface=data.get("supports_multi_surface", False),
+            supports_incremental_sync=data.get("supports_incremental_sync", False),
+            supports_realtime=data.get("supports_realtime", False),
         )

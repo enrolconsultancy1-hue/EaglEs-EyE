@@ -19,6 +19,7 @@ class MCPToolService(Service):
         self.awareness = None
         self.connector = None
         self.evidence_ingestion = None
+        self.scheduler = None
 
     def start(self):
         super().start()
@@ -35,6 +36,7 @@ class MCPToolService(Service):
         self.awareness = self.kernel.get_service("SemanticAwarenessService")
         self.connector = self.kernel.get_service("ConnectorService")
         self.evidence_ingestion = self.kernel.get_service("EvidenceIngestionService")
+        self.scheduler = self.kernel.get_service("ConnectorSchedulerService")
         print("[MCP TOOLS] Ready.")
 
     def list_tools(self):
@@ -77,6 +79,16 @@ class MCPToolService(Service):
              "description": "Get evidence ingestion pipeline statistics."},
             {"name": "get_connector_evidence", "inputSchema": {"type": "object", "properties": {"connector_id": {"type": "string"}, "count": {"type": "integer"}}, "required": ["connector_id"]},
              "description": "Trigger evidence collection from a connector and ingest into the knowledge store."},
+            {"name": "github_connector_status", "inputSchema": {"type": "object", "properties": {"connector_id": {"type": "string", "default": "github"}}, "required": []},
+             "description": "Get detailed status of the GitHub connector."},
+            {"name": "connector_sync", "inputSchema": {"type": "object", "properties": {"connector_id": {"type": "string"}}, "required": ["connector_id"]},
+             "description": "Trigger manual synchronization for a connector."},
+            {"name": "connector_metrics", "inputSchema": {"type": "object", "properties": {"connector_id": {"type": "string"}}, "required": []},
+             "description": "Get performance metrics for a connector."},
+            {"name": "connector_last_sync", "inputSchema": {"type": "object", "properties": {"connector_id": {"type": "string"}}, "required": ["connector_id"]},
+             "description": "Get the last synchronization time for a connector."},
+            {"name": "connector_health_details", "inputSchema": {"type": "object", "properties": {"connector_id": {"type": "string"}}, "required": []},
+             "description": "Get detailed health information for all or a specific connector."},
         ]
 
     def call_tool(self, name, arguments):
@@ -214,7 +226,92 @@ class MCPToolService(Service):
                 return {"error": "connector_id is required"}
             try:
                 evidence = self.connector.get_manager().collect_evidence(connector_id)
+                if evidence and self.evidence_ingestion:
+                    result = self.evidence_ingestion.ingest(connector_id, evidence)
+                    return {"evidence_count": len(evidence), "connector_id": connector_id, "ingested": result}
                 return {"evidence_count": len(evidence), "connector_id": connector_id}
+            except Exception as e:
+                return {"error": str(e)}
+        if name == "github_connector_status":
+            if not self.connector or not self.connector.get_manager():
+                return {"error": "ConnectorService is unavailable"}
+            cid = arguments.get("connector_id", "github")
+            try:
+                status = self.connector.get_manager().connector_status(cid)
+                return {"status": status}
+            except Exception as e:
+                return {"error": str(e)}
+        if name == "connector_sync":
+            if not self.connector or not self.connector.get_manager():
+                return {"error": "ConnectorService is unavailable"}
+            connector_id = arguments.get("connector_id", "")
+            if not connector_id:
+                return {"error": "connector_id is required"}
+            try:
+                manager = self.connector.get_manager()
+                evidence = manager.collect_evidence(connector_id)
+                if evidence and self.evidence_ingestion:
+                    result = self.evidence_ingestion.ingest(connector_id, evidence)
+                    return {"synced": len(evidence), "connector_id": connector_id, "ingested": result}
+                return {"synced": len(evidence), "connector_id": connector_id}
+            except Exception as e:
+                return {"error": str(e)}
+        if name == "connector_metrics":
+            if not self.connector or not self.connector.get_manager():
+                return {"error": "ConnectorService is unavailable"}
+            connector_id = arguments.get("connector_id", "")
+            try:
+                manager = self.connector.get_manager()
+                if connector_id:
+                    connector = manager.get_connector(connector_id)
+                    if hasattr(connector, 'get_metrics_collector'):
+                        metrics = connector.get_metrics_collector()
+                        return {"metrics": metrics.get_metrics(connector_id).to_dict() if metrics.get_metrics(connector_id) else {}}
+                    return {"metrics": {"connector_id": connector_id, "note": "metrics not available"}}
+                all_metrics = {}
+                for cid in manager.list_ids():
+                    connector = manager.get_connector(cid)
+                    if hasattr(connector, 'get_metrics_collector'):
+                        m = connector.get_metrics_collector().get_all_metrics()
+                        all_metrics.update(m)
+                return {"metrics": all_metrics}
+            except Exception as e:
+                return {"error": str(e)}
+        if name == "connector_last_sync":
+            if not self.connector or not self.connector.get_manager():
+                return {"error": "ConnectorService is unavailable"}
+            connector_id = arguments.get("connector_id", "")
+            if not connector_id:
+                return {"error": "connector_id is required"}
+            try:
+                connector = self.connector.get_manager().get_connector(connector_id)
+                if hasattr(connector, 'get_sync_engine'):
+                    sync_info = connector.get_sync_engine().last_sync(connector_id)
+                    return {"last_sync": sync_info}
+                return {"last_sync": None}
+            except Exception as e:
+                return {"error": str(e)}
+        if name == "connector_health_details":
+            if not self.connector or not self.connector.get_manager():
+                return {"error": "ConnectorService is unavailable"}
+            connector_id = arguments.get("connector_id", "")
+            try:
+                manager = self.connector.get_manager()
+                if connector_id:
+                    connector = manager.get_connector(connector_id)
+                    health = connector.health().to_dict()
+                    if hasattr(connector, 'get_metrics_collector'):
+                        metrics = connector.get_metrics_collector().get_health_details(connector_id, health)
+                        return {"health": metrics}
+                    return {"health": health}
+                all_health = {}
+                for cid in manager.list_ids():
+                    connector = manager.get_connector(cid)
+                    h = connector.health().to_dict()
+                    if hasattr(connector, 'get_metrics_collector'):
+                        h = connector.get_metrics_collector().get_health_details(cid, h)
+                    all_health[cid] = h
+                return {"health": all_health}
             except Exception as e:
                 return {"error": str(e)}
         return {"error": "Unknown tool: " + str(name)}

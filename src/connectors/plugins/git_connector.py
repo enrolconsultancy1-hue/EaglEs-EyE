@@ -7,6 +7,10 @@ from connectors.models import (
     Source, RawPayload, Observation, Evidence, NormalizedPayload,
     Artifact, TraceInformation,
 )
+from connectors.observation_discovery import (
+    ObservationSurface, ObservationDiscoveryEngine, SurfaceQuality,
+    EvidenceQuality, LatencyClass, Completeness, Reliability,
+)
 
 
 class GitConnector(Connector):
@@ -91,6 +95,41 @@ class GitConnector(Connector):
             return result.returncode == 0
         except (subprocess.SubprocessError, FileNotFoundError, OSError):
             return False
+
+    def discover_observation_surfaces(self) -> list:
+        return [ObservationSurface.GIT_REPOSITORY, ObservationSurface.LOCAL_WORKSPACE]
+
+    def rank_observation_surfaces(self) -> list:
+        engine = ObservationDiscoveryEngine()
+        surfaces = self.discover_observation_surfaces()
+        qualities = {
+            ObservationSurface.GIT_REPOSITORY: SurfaceQuality(
+                surface=ObservationSurface.GIT_REPOSITORY,
+                quality=EvidenceQuality.HIGH,
+                latency=LatencyClass.REALTIME,
+                completeness=Completeness.FULL,
+                reliability=Reliability.HIGH,
+                supports_incremental_sync=True,
+                authentication_required="none",
+                description="Local git operations via subprocess",
+            ),
+            ObservationSurface.LOCAL_WORKSPACE: SurfaceQuality(
+                surface=ObservationSurface.LOCAL_WORKSPACE,
+                quality=EvidenceQuality.LOW,
+                latency=LatencyClass.BATCH,
+                completeness=Completeness.MINIMAL,
+                reliability=Reliability.MEDIUM,
+                supports_incremental_sync=False,
+                authentication_required="none",
+                description="Raw workspace files outside git metadata",
+            ),
+        }
+        return engine.rank_surfaces(surfaces, qualities)
+
+    def select_observation_pipeline(self) -> list:
+        engine = ObservationDiscoveryEngine()
+        ranked = self.rank_observation_surfaces()
+        return engine.select_pipeline(ranked)
 
     def _run_git(self, args: list) -> str:
         try:

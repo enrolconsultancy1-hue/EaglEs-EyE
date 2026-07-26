@@ -1,0 +1,37 @@
+# GitHub Connector Configuration Example
+# Copy to github_connector.yaml and fill in your credentials.
+# NEVER commit secrets to version control.
+
+connector_id: github
+name: GitHub Connector
+version: "1.0.0"
+vendor: EaglEs EyE
+capabilities:
+  - git
+  - commits
+  - issues
+  - tasks
+  - api
+permissions:
+  - read
+  - observe
+observation_surfaces:
+  - official_api
+  - git_repository
+  - webhook
+preferred_surface: auto
+supports_multi_surface: true
+supports_incremental_sync: true
+supports_realtime: false
+entry_point: connectors.plugins.github_connector
+config:
+  owner: your-organization-or-username
+  repo: your-repository-name
+  auth:
+    provider: bearer
+    # Generate a GitHub Personal Access Token with repo scope:
+    # https://github.com/settings/tokens
+    token: ghp_xxxxxxxxxxxxxxxxxxxx
+  max_retries: 3
+  retry_base_delay: 1.0
+  retry_backoff: 2.0

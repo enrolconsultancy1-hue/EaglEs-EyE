@@ -81,11 +81,14 @@ class EvidenceIngestionService(Service):
 
 
 class EvidenceBusShim:
-    """Shim that bridges ConnectorManager events to the ingestion callback pattern."""
+    """Shim that bridges ConnectorManager's real EvidenceBus to the ingestion callback pattern."""
 
     def __init__(self, manager):
         self._manager = manager
         self._callbacks = []
+        evidence_bus = manager.get_evidence_bus()
+        if evidence_bus:
+            evidence_bus.subscribe(self._on_bus_evidence)
 
     def subscribe(self, callback):
         self._callbacks.append(callback)
@@ -94,7 +97,7 @@ class EvidenceBusShim:
         if callback in self._callbacks:
             self._callbacks.remove(callback)
 
-    def _notify(self, connector_id, evidence_list):
+    def _on_bus_evidence(self, connector_id, evidence_list):
         for cb in self._callbacks:
             try:
                 cb(connector_id, evidence_list)

@@ -7,6 +7,10 @@ from connectors.models import (
     Source, RawPayload, Observation, Evidence, NormalizedPayload,
     Artifact, TraceInformation,
 )
+from connectors.observation_discovery import (
+    ObservationSurface, ObservationDiscoveryEngine, SurfaceQuality,
+    EvidenceQuality, LatencyClass, Completeness, Reliability,
+)
 
 
 class FilesystemConnector(Connector):
@@ -95,3 +99,38 @@ class FilesystemConnector(Connector):
             )
             evidence_list.append(evidence)
         return evidence_list
+
+    def discover_observation_surfaces(self) -> list:
+        return [ObservationSurface.LOCAL_WORKSPACE, ObservationSurface.PROJECT_FILES]
+
+    def rank_observation_surfaces(self) -> list:
+        engine = ObservationDiscoveryEngine()
+        surfaces = self.discover_observation_surfaces()
+        qualities = {
+            ObservationSurface.LOCAL_WORKSPACE: SurfaceQuality(
+                surface=ObservationSurface.LOCAL_WORKSPACE,
+                quality=EvidenceQuality.HIGH,
+                latency=LatencyClass.REALTIME,
+                completeness=Completeness.FULL,
+                reliability=Reliability.HIGH,
+                supports_incremental_sync=True,
+                authentication_required="none",
+                description="Direct filesystem access",
+            ),
+            ObservationSurface.PROJECT_FILES: SurfaceQuality(
+                surface=ObservationSurface.PROJECT_FILES,
+                quality=EvidenceQuality.MEDIUM,
+                latency=LatencyClass.BATCH,
+                completeness=Completeness.PARTIAL,
+                reliability=Reliability.HIGH,
+                supports_incremental_sync=False,
+                authentication_required="none",
+                description="File metadata scanning",
+            ),
+        }
+        return engine.rank_surfaces(surfaces, qualities)
+
+    def select_observation_pipeline(self) -> list:
+        engine = ObservationDiscoveryEngine()
+        ranked = self.rank_observation_surfaces()
+        return engine.select_pipeline(ranked)

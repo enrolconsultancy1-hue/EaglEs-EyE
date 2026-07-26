@@ -699,6 +699,187 @@ EvidenceIngestionService
 MCPToolService  (consumes all above)
 ```
 
+## Phase 16 External Project Integration Layer (v2.4.0)
+
+Phase 16 proves the Connector Framework against a real external ecosystem
+(GitHub) while building reusable infrastructure for all future integrations:
+authentication, webhooks, synchronization, scheduling, and metrics.
+
+Phase 16 also establishes the **Universal Observation Policy** as a permanent
+architectural contract — every connector discovers, ranks, and selects the
+richest available observation pipeline automatically.
+
+### Universal Observation Policy
+
+Every connector SHALL implement:
+
+| Method | Purpose |
+|--------|---------|
+| `discover_observation_surfaces()` | List every available authorized observation surface |
+| `rank_observation_surfaces()` | Rank surfaces by evidence quality, latency, completeness, reliability |
+| `select_observation_pipeline()` | Build the optimal observation pipeline automatically |
+| `get_active_surfaces()` | Return currently active observation surfaces |
+
+Observation surfaces ordered by preference:
+1. Native AI Twin Connector
+2. MCP Server
+3. Official Plugin / Extension SDK
+4. Official API
+5. Webhooks / Event Streams
+6. Local Workspace
+7. Git Repository
+8. Project Files
+9. Build Artifacts / Config Files / Logs / Local Databases
+
+### ObservationDiscoveryEngine
+
+`ObservationDiscoveryEngine` (`connectors/observation_discovery.py`) provides
+reusable surface discovery, ranking, and pipeline selection. It computes a
+`SurfaceQuality` score from quality, latency, completeness, reliability, and
+incremental sync capability, then selects the top-ranked surfaces.
+
+### Connector Authentication Layer
+
+`connectors/auth/__init__.py` provides secure credential providers:
+
+| Provider | Class | Auth Mechanism |
+|----------|-------|----------------|
+| Personal Access Token | `PATAuth` | Bearer token in Authorization header |
+| OAuth | `OAuthAuth` | Access/refresh token flow |
+| API Key | `APIKeyAuth` | Custom header with key value |
+| Bearer Token | `BearerTokenAuth` | Bearer token in Authorization header |
+
+Credentials are never logged. All providers implement `authenticate()`,
+`get_headers()`, `sanitize()`, and `validate()`.
+
+### Generic REST Connector
+
+`RESTConnector` (`connectors/rest_connector.py`) is the reusable base class for
+REST-based project systems. Inherits from `Connector`. Provides:
+
+- GET/POST request methods with retry and exponential backoff
+- Pagination via Link header or page-based iteration
+- MetricsCollector integration for API request/retry/failure tracking
+- SyncEngine integration for checkpoint-based incremental sync
+- Extensible auth via `_setup_auth()` (PAT, Bearer, API Key)
+
+### GitHub Connector
+
+`GitHubConnector` (`connectors/plugins/github_connector.py`) implements:
+
+| Capability | REST API Endpoint | Evidence Type |
+|---|---|---|
+| Repository metadata | `GET /repos/{owner}/{repo}` | repository |
+| Branches | `GET /repos/{owner}/{repo}/branches` | branches |
+| Commits | `GET /repos/{owner}/{repo}/commits` | commits |
+| Pull Requests | `GET /repos/{owner}/{repo}/pulls` | pull_requests |
+| Issues | `GET /repos/{owner}/{repo}/issues` | issues |
+| Releases | `GET /repos/{owner}/{repo}/releases` | releases |
+| Tags | `GET /repos/{owner}/{repo}/tags` | tags |
+| Contributors | `GET /repos/{owner}/{repo}/contributors` | contributors |
+| Events | `GET /repos/{owner}/{repo}/events` | events |
+
+All evidence flows through the established pipeline:
+```
+Connector → Observe → Collect → Normalize → EvidenceBus → EvidenceIngestionService → KnowledgeStore
+```
+
+No write operations. No issue creation. No PR modification. Observation only.
+
+### Webhook Listener Framework
+
+`connectors/webhooks/__init__.py` provides:
+
+| Component | Purpose |
+|-----------|---------|
+| `WebhookRegistry` | Connector registration with secrets and event types |
+| `SignatureVerifier` | HMAC-SHA256/SHA1 signature verification |
+| `WebhookQueue` | FIFO queue with configurable retry |
+| `ReplayGuard` | Idempotency via event ID deduplication |
+| `WebhookHandler` | Top-level orchestration: receive, verify, queue, dispatch |
+
+No platform-specific webhook handlers in Phase 16 — framework only.
+
+### Synchronization Engine
+
+`SyncEngine` (`connectors/sync.py`) supports:
+
+| Operation | Purpose |
+|-----------|---------|
+| `initial_sync()` | Full fetch with cursor-based pagination |
+| `delta_sync()` | Incremental sync from stored checkpoint |
+| `resume()` | Resume incomplete sync from checkpoint |
+| `detect_conflict()` | Compare local vs remote cursors |
+
+Checkpoints stored in `SyncStore` (in-memory by default; extensible to SQLite).
+
+### ConnectorSchedulerService
+
+`ConnectorSchedulerService` (`services/connector_scheduler_service.py`)
+provides background periodic synchronization:
+
+- Register connectors with configurable interval
+- Exponential backoff on consecutive failures
+- Manual sync via `trigger_sync()`
+- Daemon thread with 5-second check loop
+- Disabled by default; enable via `config["connector_scheduler"]["enabled"]`
+
+### Connector Metrics
+
+`MetricsCollector` (`connectors/metrics.py`) tracks per-connector:
+
+| Metric | Tracking |
+|--------|----------|
+| Sync count / duration | Incremented on each sync |
+| API requests | Incremented per HTTP request |
+| Failures / retries | Incremented on error/retry |
+| Evidence created | Items synced per sync call |
+| Throughput | Items/sec computed from total / elapsed |
+| Uptime | Elapsed since connector metrics registration |
+
+Thread-safe via `threading.Lock`.
+
+### Service startup order
+
+In `build_mcp_kernel()`, `ConnectorSchedulerService` is registered after
+`EvidenceIngestionService` and before `MCPToolService`:
+
+```
+EmbeddingService
+  ↓
+VectorSearchService
+  ↓
+SemanticAwarenessService
+  ↓
+ConnectorService
+  ↓
+EvidenceIngestionService
+  ↓
+ConnectorSchedulerService
+  ↓
+MCPToolService  (consumes all above)
+```
+
+### New MCP tools (24 total)
+
+| Tool | Purpose |
+|------|---------|
+| `github_connector_status` | Get detailed status of the GitHub connector |
+| `connector_sync` | Trigger manual synchronization for a connector |
+| `connector_metrics` | Get performance metrics for a connector |
+| `connector_last_sync` | Get the last synchronization time for a connector |
+| `connector_health_details` | Get detailed health information for connectors |
+
+All 19 existing tools preserved unchanged.
+
+### Platform independence
+
+The AI Twin core contains no platform-specific logic. Only connectors contain
+platform-specific code. Every future integration (ClickUp, Codex, Cursor,
+Claude Desktop, Windsurf, VS Code, JetBrains, or any new platform) plugs into
+the same framework, follows the Universal Observation Policy, and routes
+through the established evidence pipeline.
+
 ## Boundaries
 
 `ReasoningService` only prepares evidence and proposals; it cannot execute

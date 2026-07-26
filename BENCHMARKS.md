@@ -26,6 +26,10 @@ Measured on the local Windows development environment using Python 3.14:
 | Phase 15 EventBus error isolation | Erroneous subscriber does not prevent other subscribers from receiving events |
 | Phase 15 evidence pipeline integration | Connector observe → EvidenceBus → EvidenceIngestionService → KnowledgeStore verified |
 | Phase 15 deprecation warnings | All three deprecated services emit warnings without breaking backward compatibility |
+| Phase 16 v2.4.0 release-gate regression suite (2026-07-26) | 231 existing + 42 Phase 16 = 273 total tests passed |
+| Phase 16 surface ranking | ObservationDiscoveryEngine ranks surfaces by quality, latency, completeness, reliability |
+| Phase 16 sync engine | initial_sync + delta_sync across 100 items completes with checkpoint persistence |
+| Phase 16 scheduler overhead | ConnectorSchedulerService daemon loop adds <1ms per check tick |
 
 The SQLite store uses WAL mode, `synchronous=NORMAL`, foreign-key enforcement,
 and a 5-second busy timeout. This keeps queued indexing practical while each

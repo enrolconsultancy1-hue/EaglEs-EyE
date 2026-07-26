@@ -1,0 +1,21 @@
+# Webhook Listener Configuration Example
+# Copy to webhook_listener.yaml and configure as needed.
+# NEVER commit secrets to version control.
+
+webhook:
+  host: "127.0.0.1"
+  port: 9104
+  max_queue_size: 1000
+  max_retries: 3
+  retry_delay_seconds: 1.0
+  replay_protection_window: 300
+
+connectors:
+  - connector_id: github
+    webhook_url: "http://127.0.0.1:9104/webhook/github"
+    secret: "your-webhook-secret-here"
+    events:
+      - push
+      - pull_request
+      - issues
+      - release

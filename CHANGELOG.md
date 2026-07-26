@@ -1,5 +1,31 @@
 # Changelog
 
+## phase16-release / v2.4.0 — 2026-07-26
+
+Phase 16 complete — External Project Integration Layer. v2.4.0 proves the
+connector framework against a real external ecosystem (GitHub) while building
+reusable infrastructure for all future integrations.
+
+- **Universal Observation Policy**: 4 new abstract methods on Connector ABC — `discover_observation_surfaces()`, `rank_observation_surfaces()`, `select_observation_pipeline()`, `get_active_surfaces()`. All existing connectors implement them.
+- **ObservationDiscoveryEngine**: reusable surface quality scoring, preference ordering, and automatic pipeline selection.
+- **Connector Authentication** (`connectors/auth/`): PATAuth, OAuthAuth, APIKeyAuth, BearerTokenAuth with credential sanitization, validation, and secure header injection.
+- **Webhook Framework** (`connectors/webhooks/`): WebhookRegistry, SignatureVerifier (HMAC-SHA256/SHA1), WebhookQueue, ReplayGuard, WebhookHandler. No platform-specific webhook handlers.
+- **SyncEngine** (`connectors/sync.py`): initial_sync, delta_sync, resume, conflict detection with checkpoint persistence via SyncStore.
+- **ConnectorSchedulerService** (`services/connector_scheduler_service.py`): background periodic sync with exponential backoff, daemon thread, 5-second check loop. Disabled by default.
+- **MetricsCollector** (`connectors/metrics.py`): thread-safe per-connector counters for sync count, API requests, failures, retries, evidence, observations, throughput, uptime.
+- **RESTConnector** (`connectors/rest_connector.py`): reusable base class for REST-based project systems with pagination (Link header / page-based), RetryPolicy (exponential backoff), health check, auth setup.
+- **GitHubConnector** (`connectors/plugins/github_connector.py`): 9 capabilities — repository metadata, branches, commits, pull requests, issues, releases, tags, contributors, events. Two observation surfaces: `official_api`, `git_repository`.
+- **Manifest extension**: 5 new fields (observation_surfaces, preferred_surface, supports_multi_surface, supports_incremental_sync, supports_realtime).
+- **SDK extension**: `run_observation_discovery()` static method.
+- **Validator extension**: `VALID_OBSERVATION_SURFACES`, `"network"` and `"webhook"` capabilities.
+- **5 new MCP tools**: `github_connector_status`, `connector_sync`, `connector_metrics`, `connector_last_sync`, `connector_health_details`. All 19 existing tools preserved. 24 tools total.
+- **Sample configs**: `github_connector.yaml.example`, `webhook_listener.yaml.example`.
+- **Zero regressions**: 231 existing Phase 6–15 tests continue to pass.
+- **Phase 16 release gate**: 42 Phase 16 tests passed; 273 total.
+- **Service order**: ConnectorSchedulerService registered after EvidenceIngestionService, before MCPToolService in build_mcp_kernel().
+- AI_TWIN_CONSTITUTION.md unchanged.
+- ARCHITECTURE.md, PROJECT_STATUS.md, NEXT_TASK.md, BENCHMARKS.md, CHANGELOG.md updated.
+
 ## phase15-release / v2.3.0 — 2026-07-26
 
 Phase 15 complete — Unified Evidence & Knowledge Graph. v2.3.0 connects the

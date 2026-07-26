@@ -4,6 +4,10 @@ from connectors.models import (
     Source, RawPayload, Observation, Evidence, NormalizedPayload,
     Artifact, TraceInformation,
 )
+from connectors.observation_discovery import (
+    ObservationSurface, ObservationDiscoveryEngine, SurfaceQuality,
+    EvidenceQuality, LatencyClass, Completeness, Reliability,
+)
 
 
 class MockConnector(Connector):
@@ -82,3 +86,28 @@ class MockConnector(Connector):
             "mock_data": raw.data,
             "connector": self.id,
         })
+
+    def discover_observation_surfaces(self) -> list:
+        return [ObservationSurface.OTHER]
+
+    def rank_observation_surfaces(self) -> list:
+        engine = ObservationDiscoveryEngine()
+        surfaces = self.discover_observation_surfaces()
+        qualities = {
+            ObservationSurface.OTHER: SurfaceQuality(
+                surface=ObservationSurface.OTHER,
+                quality=EvidenceQuality.MEDIUM,
+                latency=LatencyClass.BATCH,
+                completeness=Completeness.PARTIAL,
+                reliability=Reliability.MEDIUM,
+                supports_incremental_sync=False,
+                authentication_required="none",
+                description="Mock test data source",
+            ),
+        }
+        return engine.rank_surfaces(surfaces, qualities)
+
+    def select_observation_pipeline(self) -> list:
+        engine = ObservationDiscoveryEngine()
+        ranked = self.rank_observation_surfaces()
+        return engine.select_pipeline(ranked)

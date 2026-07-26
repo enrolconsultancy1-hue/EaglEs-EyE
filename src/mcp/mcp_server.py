@@ -31,6 +31,7 @@ from services.symbol_indexer_service import SymbolIndexerService
 from services.vector_search_service import VectorSearchService
 from services.workspace_observer_service import WorkspaceObserverService
 from services.connector_service import ConnectorService
+from services.connector_scheduler_service import ConnectorSchedulerService
 from services.evidence_ingestion_service import EvidenceIngestionService
 
 
@@ -70,7 +71,7 @@ class MCPServer:
             "result": {
                 "protocolVersion": SUPPORTED_PROTOCOL_VERSION,
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "EaglEs EyE MCP", "version": "2.2.0"},
+                "serverInfo": {"name": "EaglEs EyE MCP", "version": "2.3.0"},
             },
         }
 
@@ -128,11 +129,12 @@ def build_mcp_kernel(memory_path=None):
     awareness = SemanticAwarenessService(kernel)
     connector_svc = ConnectorService(kernel)
     evidence_ingestion = EvidenceIngestionService(kernel)
+    connector_scheduler = ConnectorSchedulerService(kernel)
     mcp_tool = MCPToolService(kernel)
     services = (store, sym_idx, kg, indexer, retrieval, ctx, xref, arch, docs,
                 ws, timeline, sessions, causal, evolution, decisions, cognitive,
                 embedding, vector_search, awareness, connector_svc,
-                evidence_ingestion, mcp_tool)
+                evidence_ingestion, connector_scheduler, mcp_tool)
     for s in services:
         kernel.register_service(s)
         s.start()
