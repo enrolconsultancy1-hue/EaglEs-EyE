@@ -7,6 +7,22 @@ import sys
 import threading
 
 
+def _diagnose_response(raw_line, tool_name=""):
+    """Return a human-readable diagnostic for a non-JSON MCP response."""
+    if not raw_line:
+        return "Empty response (MCP server closed connection)"
+    clean = raw_line.strip()
+    if not clean:
+        return "Blank line received (stripped to empty)"
+    preview = clean[:200]
+    hex_preview = " ".join("%02x" % ord(c) for c in clean[:40])
+    return (
+        "Invalid JSON response for tool '%s': %r\n"
+        "  First 200 chars: %s\n"
+        "  Hex of first 40 chars: %s"
+    ) % (tool_name, preview, preview, hex_preview)
+
+
 class MCPClient:
     def __init__(self, process=None):
         self._proc = process
@@ -62,7 +78,12 @@ class MCPClient:
         response = self._proc.stdout.readline()
         if not response:
             raise ConnectionError("MCP server closed connection")
-        data = json.loads(response.strip())
+        try:
+            data = json.loads(response.strip())
+        except json.JSONDecodeError:
+            diag = _diagnose_response(response, method)
+            print("[MCP CLIENT] " + diag, file=sys.stderr)
+            raise RuntimeError("MCP server returned invalid JSON for '%s'. See stderr for details." % method)
         if "error" in data:
             raise RuntimeError("MCP error (%d): %s" % (data["error"]["code"], data["error"]["message"]))
         content = data.get("result", {}).get("content", [])

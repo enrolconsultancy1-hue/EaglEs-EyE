@@ -193,14 +193,18 @@ def main():
             port = config["mcp"]["tcp"].get("port", 9102)
             tcp_transport = TcpTransport(host, port)
             tcp_transport.start(server.handle_message)
+    # Redirect stdout → stderr for the process lifetime so that
+    # EventBus.publish() and other print() calls don't corrupt the
+    # JSON-RPC protocol stream (write_message uses _PROTOCOL_STDOUT
+    # captured at import in transport_stdio.py).
+    sys.stdout = sys.stderr
     try:
         server.run_stdio()
     finally:
-        with contextlib.redirect_stdout(sys.stderr):
-            if tcp_transport:
-                tcp_transport.stop()
-            for s in reversed(services):
-                s.stop()
+        if tcp_transport:
+            tcp_transport.stop()
+        for s in reversed(services):
+            s.stop()
 
 
 if __name__ == "__main__":
