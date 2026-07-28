@@ -39,4 +39,4 @@ build/
 dist/
 
 # Git
-.git/
+.git/trace_frameworks.py 
