@@ -11,12 +11,14 @@ product roadmap in [ROADMAP.md](ROADMAP.md#product-roadmap--capability-driven).
 
 ## Current Version
 
-**v3.1-dev — Project Twin Discovery Connector**
+**v3.2-dev — Code Intelligence Twin**
 
-The AI Twin Core remains frozen at v3.0.0. The **Project Twin Discovery
-Connector** extends the platform with the first external project observation
-and Twin creation capability — a LocalProjectConnector plugin, a
-ProjectTwinDiscoveryService, and a discover_project_twin MCP tool.
+The AI Twin Core remains frozen at v3.0.0. The **Code Intelligence Twin**
+extends the Project Twin with source code analysis — language detection, class/
+function/import extraction, code knowledge graphs, architecture layer detection,
+and a natural-language `code_query()` interface backed by
+CodeIntelligenceService. The **Cognitive Twin** gains an 8th cognitive
+dimension (`code_summary`) integrating code intelligence into project reasoning.
 
 ---
 
@@ -260,9 +262,37 @@ Completed:
 
 ---
 
+## Phase 8 — Code Intelligence Twin
+
+Completed:
+
+- **CodeIntelligenceService** (`services/code_intelligence_service.py`):
+  Language detection for 7 languages (Python, Dart, JavaScript, TypeScript,
+  Java, C#, Go), source code scanning (classes, functions, imports), code
+  knowledge graph generation, architecture layer detection (Service, Repository,
+  Controller, Data, Presentation, Handler, Middleware, Utility, Configuration,
+  Manager, etc.), entry point detection, important file scoring, and complexity
+  estimation.
+- **`code_query()` interface**: Answers 10+ code question types with structured
+  `{answer, evidence, confidence}` responses. Supports free-text keyword search.
+- **MCP integration**: `code_intelligence` and `code_query` MCP tools. 44 tools
+  total.
+- **Cognitive Twin enhancement**: 8th cognitive dimension `code_summary` added
+  to `CognitiveTwinService._generate_cognition()`. Code questions routed through
+  `CodeIntelligenceService.code_query()`.
+- **GUI integration**: Code Intelligence Twin section in `twin.html` with
+  language cards, architecture layers, important files, code graph, query box,
+  and 8 quick-question buttons.
+- **47 new Phase 8 tests**: covering language detection, source scanning, code
+  graph, architecture, code query, MCP registration, GUI response patterns, and
+  Cognitive Twin integration. All 473 existing tests unchanged.
+- **520 total passing tests**, zero regressions.
+
+---
+
 # Latest Measurements
 
-The v3.1-dev regression suite completes **431 tests** (403 existing + 28 Phase 19).
+The v3.2-dev regression suite completes **520 tests** (473 existing + 47 Phase 8).
 See `BENCHMARKS.md` for recorded measurements.
 
 Line coverage remains pending installation of the declared development-only

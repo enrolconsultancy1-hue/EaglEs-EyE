@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mission Control — Project Evolution</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+.timeline-container { position: relative; margin: 20px 0; padding-left: 40px; }
+.timeline-line { position: absolute; left: 18px; top: 0; bottom: 0; width: 3px; background: #30363d; }
+.timeline-node { position: relative; margin-bottom: 24px; }
+.timeline-dot { position: absolute; left: -32px; top: 6px; width: 14px; height: 14px; border-radius: 50%; background: #1f6feb; border: 3px solid #0d1117; z-index: 1; }
+.timeline-dot.first { background: #3fb950; }
+.timeline-dot.changed { background: #d29922; }
+.timeline-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; margin-left: 8px; }
+.timeline-card h4 { color: #f0f6fc; font-size: 16px; margin-bottom: 4px; }
+.timeline-card .version-meta { color: #8b949e; font-size: 12px; margin-bottom: 8px; }
+.timeline-card .version-fingerprint { color: #484f58; font-size: 11px; font-family: monospace; }
+.change-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin: 2px; }
+.change-added { background: #1b7b38; color: #fff; }
+.change-removed { background: #da3633; color: #fff; }
+.change-modified { background: #d29922; color: #000; }
+.change-section { margin-top: 8px; }
+.change-section strong { color: #8b949e; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.change-item { font-size: 13px; padding: 2px 0; color: #c9d1d9; }
+.empty-state { color: #484f58; font-style: italic; font-size: 13px; padding: 20px; text-align: center; }
+.insight-icon { font-size: 18px; margin-right: 6px; }
+.insight-row { transition: background 0.2s; }
+.insight-row:hover { background: #161b22 !important; }
+</style>
+</head>
+<body>
+<nav class="topbar">
+  <span class="logo">EaglEs EyE</span>
+  <span class="subtitle">Mission Control</span>
+  <a href="/">Dashboard</a>
+  <a href="/timeline.html">Timeline</a>
+  <a href="/twin.html">AI Twin</a>
+  <a href="/evolution.html" class="active">Evolution</a>
+  <a href="/search.html">Search</a>
+  <a href="/search_semantic.html">Semantic</a>
+  <a href="/graph.html">Graph</a>
+  <a href="/explain.html">Explain</a>
+  <a href="/awareness.html">Awareness</a>
+  <a href="/metrics.html">Metrics</a>
+  <a href="/help.html">Help</a>
+</nav>
+<main>
+  <h1>Project Evolution</h1>
+  <p class="scope-note">Track how projects evolve over time — version by version.</p>
+
+  <div class="connect-panel">
+    <input type="text" id="project-path" placeholder="Enter project path..." style="flex:1;padding:8px;font-size:14px;border:1px solid #30363d;border-radius:4px;background:#0d1117;color:#c9d1d9;">
+    <button id="load-evolution-btn" onclick="loadEvolution()" style="padding:8px 20px;font-size:14px;background:#1a73e8;color:#fff;border:none;border-radius:4px;cursor:pointer;">Load Evolution</button>
+  </div>
+
+  <div id="evolution-result" style="display:none;margin-top:20px;">
+    <div id="evolution-summary" class="card" style="margin-bottom:16px;"></div>
+    <div id="insights-card" class="card" style="margin-bottom:16px;display:none;">
+      <h3 style="color:#58a6ff;">Evolution Insights</h3>
+      <div id="insights-body"></div>
+    </div>
+    <div id="timeline-root" class="timeline-container"></div>
+    <div id="comparison-detail" style="margin-top:16px;"></div>
+  </div>
+  <div id="evolution-empty" class="empty-state" style="display:none;">No evolution data available. Discover a project first to build its history.</div>
+</main>
+<script>
+async function apiCall(tool, args) {
+  const r = await fetch("/api/call", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tool:tool,arguments:args||{}})});
+  return r.json();
+}
+async function fetchEvolution(path) {
+  const r = await fetch("/api/twin_evolution?project_path=" + encodeURIComponent(path));
+  return r.json();
+}
+function escapeHtml(text) {
+  if (!text) return "";
+  var d = document.createElement("div");
+  d.textContent = text;
+  return d.innerHTML;
+}
+function renderChangeSection(title, items, badgeClass, icon) {
+  if (!items || items.length === 0) return "";
+  var html = "<div class='change-section'><strong>" + title + "</strong><br>";
+  items.forEach(function(item) {
+    html += "<div class='change-item'><span class='change-badge " + badgeClass + "'>" + icon + "</span> " + escapeHtml(item) + "</div>";
+  });
+  html += "</div>";
+  return html;
+}
+function renderComparison(comp, index) {
+  if (!comp || !comp.has_changes) return "";
+  var html = "<div class='card' style='margin-top:12px;'>";
+  html += "<h3 style='color:#d29922;'>Changes: v" + comp.from_version + " → v" + comp.to_version + "</h3>";
+  html += renderChangeSection("New files", comp.new_files, "change-added", "+");
+  html += renderChangeSection("Removed files", comp.removed_files, "change-removed", "−");
+  html += renderChangeSection("New dependencies", comp.changed_dependencies.added, "change-added", "+");
+  html += renderChangeSection("Removed dependencies", comp.changed_dependencies.removed, "change-removed", "−");
+  html += renderChangeSection("New frameworks", comp.changed_frameworks.added, "change-added", "+");
+  html += renderChangeSection("Removed frameworks", comp.changed_frameworks.removed, "change-removed", "−");
+  html += renderChangeSection("New documentation", comp.documentation_changes.added, "change-added", "+");
+  html += renderChangeSection("Removed documentation", comp.documentation_changes.removed, "change-removed", "−");
+  if (comp.classification_changed) {
+    html += "<div class='change-section'><strong>Domain classification changed</strong></div>";
+  }
+  if (comp.purpose_changed) {
+    html += "<div class='change-section'><strong>Project purpose changed</strong></div>";
+  }
+  if (comp.changed_architecture && comp.changed_architecture.old) {
+    html += "<div class='change-section'><strong>Architecture documentation changed</strong></div>";
+  }
+  html += "</div>";
+  return html;
+}
+async function loadEvolution() {
+  var path = document.getElementById("project-path").value.trim();
+  if (!path) { alert("Enter a project path"); return; }
+
+  var resultDiv = document.getElementById("evolution-result");
+  var emptyDiv = document.getElementById("evolution-empty");
+  resultDiv.style.display = "none";
+  emptyDiv.style.display = "none";
+
+  var data = await fetchEvolution(path);
+  if (data.error) {
+    emptyDiv.textContent = "Error: " + data.error;
+    emptyDiv.style.display = "block";
+    return;
+  }
+
+  var versions = data.versions || [];
+  var comparisons = data.comparisons || [];
+
+  if (versions.length === 0) {
+    emptyDiv.style.display = "block";
+    return;
+  }
+
+  // Summary
+  var summaryHtml = "<h3>Evolution Summary</h3>";
+  summaryHtml += "<p style='color:#c9d1d9;font-size:14px;'>";
+  summaryHtml += "<strong>" + versions.length + "</strong> scan(s) · ";
+  summaryHtml += "<strong>" + comparisons.length + "</strong> comparison(s) · ";
+  summaryHtml += "Latest: <strong>v" + versions[versions.length-1].version + "</strong>";
+  summaryHtml += "</p>";
+
+  // Detect total changes
+  var totalChanges = 0;
+  comparisons.forEach(function(c) {
+    if (c.has_changes) totalChanges += (c.new_files || []).length + (c.removed_files || []).length
+      + (c.changed_dependencies.added || []).length + (c.changed_dependencies.removed || []).length
+      + (c.changed_frameworks.added || []).length + (c.changed_frameworks.removed || []).length;
+  });
+  summaryHtml += "<p style='color:#8b949e;font-size:13px;'>" + totalChanges + " total change(s) detected across history</p>";
+  document.getElementById("evolution-summary").innerHTML = summaryHtml;
+
+  // Evolution Insights card
+  var insightsData = data.insights || {};
+  var perTransition = insightsData.per_transition || [];
+  var overallArc = insightsData.overall || "";
+  var totalRisks = insightsData.total_risks || 0;
+  if (perTransition.length > 0 || overallArc) {
+    var insightHtml = "";
+
+    // Overall arc
+    if (overallArc) {
+      insightHtml += "<div class='insight-arc' style='margin-bottom:12px;'>" +
+        "<span class='insight-icon'>📊</span> " +
+        "<span style='color:#f0f6fc;font-size:15px;'>" + escapeHtml(overallArc) + "</span>" +
+        "</div>";
+    }
+
+    // Maturity / risk summary badges
+    var maturityCount = 0;
+    var riskCount = 0;
+    perTransition.forEach(function(it) {
+      if (it.maturity_assessment && it.maturity_assessment.indexOf("increased") > -1) maturityCount++;
+      riskCount += it.risk_count || 0;
+    });
+    if (maturityCount > 0 || riskCount > 0) {
+      insightHtml += "<div style='margin-bottom:12px;'>";
+      if (maturityCount > 0) {
+        insightHtml += "<span class='change-badge change-added' style='font-size:12px;'>📈 Maturity increased in " + maturityCount + " transition(s)</span> ";
+      }
+      if (riskCount > 0) {
+        insightHtml += "<span class='change-badge change-removed' style='font-size:12px;'>⚠️ " + riskCount + " risk(s) detected</span> ";
+      }
+      insightHtml += "</div>";
+    }
+
+    // Per-transition insights (compact)
+    insightHtml += "<div style='margin-top:8px;'>";
+    perTransition.forEach(function(it) {
+      if (!it.has_changes) return;
+      insightHtml += "<div class='insight-row' style='margin-bottom:8px;padding:8px;background:#0d1117;border-radius:6px;border-left:3px solid " +
+        (it.risk_count > 0 ? "#da3633" : "#3fb950") + ";'>";
+      insightHtml += "<div style='font-weight:600;color:#f0f6fc;font-size:13px;'>v" + it.from_version + " → v" + it.to_version + "</div>";
+
+      // Maturity
+      if (it.maturity_assessment && it.maturity_assessment.indexOf("increased") > -1) {
+        insightHtml += "<div style='color:#3fb950;font-size:12px;margin:2px 0;'>📈 " + escapeHtml(it.maturity_assessment) + "</div>";
+      } else if (it.maturity_assessment) {
+        insightHtml += "<div style='color:#8b949e;font-size:12px;margin:2px 0;'>" + escapeHtml(it.maturity_assessment) + "</div>";
+      }
+
+      // Risks
+      (it.risks || []).forEach(function(r) {
+        var sevColor = r.severity === "high" ? "#da3633" : r.severity === "medium" ? "#d29922" : "#8b949e";
+        insightHtml += "<div style='color:" + sevColor + ";font-size:12px;margin:1px 0;'>⚠️ " + escapeHtml(r.message) + "</div>";
+      });
+
+      // Narrative (short)
+      if (it.narrative && it.narrative.length > 10) {
+        var shortNarrative = it.narrative.length > 200 ? it.narrative.slice(0, 200) + "..." : it.narrative;
+        insightHtml += "<div style='color:#8b949e;font-size:12px;margin-top:2px;'>" + escapeHtml(shortNarrative) + "</div>";
+      }
+      insightHtml += "</div>";
+    });
+    insightHtml += "</div>";
+
+    document.getElementById("insights-body").innerHTML = insightHtml;
+    document.getElementById("insights-card").style.display = "block";
+  }
+
+  // Timeline
+  var timelineHtml = "<div class='timeline-line'></div>";
+  var isFirst = true;
+  versions.forEach(function(v, idx) {
+    var hasChanges = false;
+    if (idx > 0) {
+      comparisons.forEach(function(c) {
+        if (c.to_version === v.version && c.has_changes) hasChanges = true;
+      });
+    }
+    var dotClass = "timeline-dot";
+    if (isFirst) dotClass += " first";
+    if (hasChanges) dotClass += " changed";
+
+    timelineHtml += "<div class='timeline-node'>";
+    timelineHtml += "<div class='" + dotClass + "'></div>";
+    timelineHtml += "<div class='timeline-card'>";
+    timelineHtml += "<h4>v" + v.version + " — " + escapeHtml(v.timestamp) + "</h4>";
+    timelineHtml += "<div class='version-meta'>Fingerprint: <span class='version-fingerprint'>" + escapeHtml(v.fingerprint) + "</span></div>";
+
+    // Show changes for each comparison
+    if (idx > 0) {
+      comparisons.forEach(function(c) {
+        if (c.to_version === v.version) {
+          if (c.has_changes && c.summary && c.summary.length > 0) {
+            timelineHtml += "<div style='margin-top:6px;'>";
+            c.summary.forEach(function(s) {
+              timelineHtml += "<span class='change-badge change-modified'>" + escapeHtml(s) + "</span> ";
+            });
+            timelineHtml += "</div>";
+          } else if (!c.has_changes) {
+            timelineHtml += "<div style='margin-top:6px;color:#484f58;font-size:13px;'>No significant changes</div>";
+          }
+        }
+      });
+    } else {
+      timelineHtml += "<div style='margin-top:6px;color:#3fb950;font-size:13px;'>Initial scan</div>";
+    }
+
+    timelineHtml += "</div></div>";
+    isFirst = false;
+  });
+  document.getElementById("timeline-root").innerHTML = timelineHtml;
+
+  // Detailed comparisons
+  var detailHtml = "<h2>Change Details</h2>";
+  comparisons.forEach(function(c, idx) {
+    detailHtml += renderComparison(c, idx);
+  });
+  if (comparisons.length === 0) {
+    detailHtml += "<div class='empty-state'>Only one version available. Re-scan the project to see changes.</div>";
+  }
+  document.getElementById("comparison-detail").innerHTML = detailHtml;
+
+  resultDiv.style.display = "block";
+}
+</script>
+</body>
+</html>

@@ -557,7 +557,7 @@ class TestMCPToolsPhase18(unittest.TestCase):
                   "ai_twin_reasoning", "ai_twin_report"]
         for name in legacy:
             self.assertIn(name, names, "Tool missing: " + name)
-        self.assertEqual(len(names), 41)  # 32 legacy + 8 Phase 18 + 1 Phase 19
+        self.assertEqual(len(names), 44)  # 32 legacy + 8 Phase 18 + 1 Phase 19 + 1 Phase 7 + 2 Phase 8
 
     def test_unknown_tool_returns_error(self):
         result = self.mcp.call_tool("nonexistent_tool", {})
@@ -596,7 +596,7 @@ class TestMCPServerRegistration18(unittest.TestCase):
         kernel, services = build_mcp_kernel(tempfile.mkdtemp())
         mcp_tool = kernel.get_service("MCPToolService")
         tools = mcp_tool.list_tools()
-        self.assertEqual(len(tools), 41)
+        self.assertEqual(len(tools), 44)
         for s in reversed(services):
             s.stop()
 

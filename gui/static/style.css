@@ -35,3 +35,69 @@ button:hover { background: #30363d; }
 .explain-layer.scope { border-left: 4px solid #8b949e; }
 .explain-arrow { text-align: center; font-size: 24px; color: #30363d; }
 .error { color: #f85149; }
+
+/* Connect → Scan → Twin workflow */
+.connect-panel { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+.connect-panel input { background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; padding: 8px 12px; border-radius: 6px; font-size: 14px; flex: 1; }
+.connect-panel input:focus { border-color: #58a6ff; outline: none; }
+.workflow-list { list-style: none; padding: 0; }
+.workflow-step { padding: 10px 16px; margin-bottom: 4px; border-radius: 6px; font-size: 14px; font-weight: 600; background: #161b22; border-left: 4px solid #30363d; color: #8b949e; }
+.workflow-step.pending { border-left-color: #d29922; color: #d29922; }
+.workflow-step.done { border-left-color: #3fb950; color: #3fb950; }
+.workflow-step.error { border-left-color: #f85149; color: #f85149; }
+.workflow-step::before { content: "○ "; }
+.workflow-step.done::before { content: "✓ "; }
+.workflow-step.error::before { content: "✗ "; }
+.workflow-step.pending::before { content: "◌ "; }
+
+/* Confidence badges */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+.badge-high { background: #1b7b38; color: #fff; }
+.badge-medium { background: #d29922; color: #000; }
+.badge-low { background: #8b949e; color: #fff; }
+
+/* Architect Summary card (full width) */
+.summary-card { grid-column: 1 / -1; background: linear-gradient(135deg, #1b2838 0%, #161b22 100%); border: 1px solid #58a6ff; }
+.summary-card .card-body { font-size: 15px; line-height: 1.6; color: #f0f6fc; }
+
+/* Project Identity */
+.identity-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.domain-icon { font-size: 28px; }
+.identity-name { font-size: 18px; }
+.identity-type { color: #8b949e; font-size: 13px; margin-bottom: 8px; }
+.identity-domain { margin-bottom: 4px; font-size: 13px; }
+.identity-confidence { margin-bottom: 6px; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+.identity-evidence { margin-top: 8px; font-size: 12px; }
+.evidence-tag { display: inline-block; background: #1f2d3d; color: #8b949e; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin: 2px; border: 1px solid #30363d; }
+
+/* Confidence bar visualization */
+.conf-bar { display: inline-flex; gap: 3px; align-items: center; }
+.conf-seg { width: 16px; height: 6px; border-radius: 3px; background: #30363d; display: inline-block; }
+.conf-seg.conf-on { background: #3fb950; }
+
+/* Tech Stack tags */
+.tag { display: inline-block; background: #1f2d3d; color: #c9d1d9; padding: 3px 10px; border-radius: 12px; font-size: 12px; margin: 2px; border: 1px solid #30363d; }
+
+/* Knowledge Map */
+.doc-entry { font-size: 12px; padding: 2px 0; color: #c9d1d9; }
+.doc-entry.dim { color: #484f58; font-style: italic; }
+.doc-count { color: #8b949e; font-size: 11px; font-weight: 400; }
+.config-tag { display: inline-block; background: #1f2d3d; color: #8b949e; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin: 2px; }
+
+/* Evolution Timeline */
+.timeline-container { position: relative; margin: 20px 0; padding-left: 40px; }
+.timeline-line { position: absolute; left: 18px; top: 0; bottom: 0; width: 3px; background: #30363d; }
+.timeline-node { position: relative; margin-bottom: 24px; }
+.timeline-dot { position: absolute; left: -32px; top: 6px; width: 14px; height: 14px; border-radius: 50%; background: #1f6feb; border: 3px solid #0d1117; z-index: 1; }
+.timeline-dot.first { background: #3fb950; }
+.timeline-dot.changed { background: #d29922; }
+.timeline-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; margin-left: 8px; }
+.timeline-card h4 { color: #f0f6fc; font-size: 16px; margin-bottom: 4px; }
+.timeline-card .version-meta { color: #8b949e; font-size: 12px; margin-bottom: 8px; }
+.change-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin: 2px; }
+.change-added { background: #1b7b38; color: #fff; }
+.change-removed { background: #da3633; color: #fff; }
+.change-modified { background: #d29922; color: #000; }
+.change-section { margin-top: 8px; }
+.change-section strong { color: #8b949e; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.change-item { font-size: 13px; padding: 2px 0; color: #c9d1d9; }

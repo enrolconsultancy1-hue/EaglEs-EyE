@@ -32,6 +32,8 @@ class MCPToolService(Service):
         self.unified_twin = None
         self.twin_report = None
         self.project_twin = None
+        self.cognitive_twin = None
+        self.code_intel = None
 
     def start(self):
         super().start()
@@ -61,6 +63,8 @@ class MCPToolService(Service):
         self.unified_twin = self.kernel.get_service("UnifiedProjectTwin")
         self.twin_report = self.kernel.get_service("UniversalTwinReport")
         self.project_twin = self.kernel.get_service("ProjectTwinDiscoveryService")
+        self.cognitive_twin = self.kernel.get_service("CognitiveTwinService")
+        self.code_intel = self.kernel.get_service("CodeIntelligenceService")
         print("[MCP TOOLS] Ready.")
 
     def list_tools(self):
@@ -147,6 +151,12 @@ class MCPToolService(Service):
              "description": "Generate a complete, evidence-backed Universal AI Twin Report."},
             {"name": "discover_project_twin", "inputSchema": {"type": "object", "properties": {"project_path": {"type": "string"}}, "required": ["project_path"]},
              "description": "Discover a local project folder and create a Project Twin with identity, stack, dependencies, and repository detection."},
+            {"name": "cognitive_twin_query", "inputSchema": {"type": "object", "properties": {"project_path": {"type": "string"}, "question": {"type": "string"}}, "required": ["project_path"]},
+             "description": "Query the Cognitive Twin about a project. Loads the twin and answers questions about purpose, domain, architecture, maturity, components, risks, and recommendations."},
+            {"name": "code_intelligence", "inputSchema": {"type": "object", "properties": {"project_path": {"type": "string"}}, "required": ["project_path"]},
+             "description": "Analyze source code in a project and return language detection, components, architecture layers, and code graph."},
+            {"name": "code_query", "inputSchema": {"type": "object", "properties": {"project_path": {"type": "string"}, "question": {"type": "string"}}, "required": ["project_path", "question"]},
+             "description": "Ask a question about the project's source code. Questions: classes, functions, languages, imports, graph, architecture, entry points, important files, complexity, components, or overview."},
         ]
 
     def call_tool(self, name, arguments):
@@ -508,4 +518,44 @@ class MCPToolService(Service):
                 return {"error": "project_path is required"}
             result = self.project_twin.discover_project(project_path)
             return {"discovery": result}
+        if name == "cognitive_twin_query":
+            if not self.cognitive_twin:
+                return {"error": "CognitiveTwinService unavailable"}
+            project_path = arguments.get("project_path", "")
+            question = arguments.get("question", "Explain this project")
+            if not project_path:
+                return {"error": "project_path is required for cognitive_twin_query"}
+            # Load from the most recent twin version
+            import os, json
+            project_name = os.path.basename(os.path.normpath(project_path))
+            config = self.kernel.get_config() or {}
+            memory_path = config.get("memory_path", "memory")
+            twin_path = os.path.join(memory_path, "twins", f"{project_name}.twin.json")
+            if not os.path.isfile(twin_path):
+                return {"error": f"No twin found for {project_name}. Discover the project first."}
+            load_result = self.cognitive_twin.load_twin_from_path(twin_path)
+            if "error" in load_result:
+                return {"error": load_result["error"]}
+            answer = self.cognitive_twin.ask(question)
+            return {"answer": answer}
+        if name == "code_intelligence":
+            if not self.code_intel:
+                return {"error": "CodeIntelligenceService unavailable"}
+            project_path = arguments.get("project_path", "")
+            if not project_path:
+                return {"error": "project_path is required for code_intelligence"}
+            result = self.code_intel.analyze_project(project_path)
+            return {"code_intelligence": result}
+        if name == "code_query":
+            if not self.code_intel:
+                return {"error": "CodeIntelligenceService unavailable"}
+            project_path = arguments.get("project_path", "")
+            question = arguments.get("question", "Overview")
+            if not project_path:
+                return {"error": "project_path is required for code_query"}
+            analysis = self.code_intel.analyze_project(project_path)
+            if "error" in analysis:
+                return {"error": analysis["error"]}
+            answer = self.code_intel.code_query(question)
+            return {"answer": answer}
         return {"error": "Unknown tool: " + str(name)}

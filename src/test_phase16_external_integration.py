@@ -467,7 +467,7 @@ class Phase16McpToolTests(unittest.TestCase):
 
     def test_all_tools_40_total(self):
         tools = self.tool_svc.list_tools()
-        self.assertEqual(len(tools), 41)
+        self.assertEqual(len(tools), 44)
 
 
 class Phase16SDKRunPipelineFixTests(unittest.TestCase):

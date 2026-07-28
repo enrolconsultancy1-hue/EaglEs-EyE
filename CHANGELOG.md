@@ -1,5 +1,69 @@
 # Changelog
 
+## Phase 8 — Code Intelligence Twin — 2026-07-28
+
+Code Intelligence Twin evolves EaglEs EyE from understanding project
+documentation into understanding project source code — analyzing languages,
+classes, functions, imports, architecture layers, and code relationships.
+
+- **CodeIntelligenceService** (`services/code_intelligence_service.py`):
+  Deterministic source code analysis with language detection (Python, Dart,
+  JavaScript, TypeScript, Java, C#, Go), source scanning (classes, functions,
+  imports), code knowledge graph (nodes + edges), architecture layer detection
+  (Service, Repository, Controller, Data, Presentation, etc.), entry point
+  detection, important file scoring, and complexity estimation. No external
+  LLM calls.
+- **`code_query()` interface**: Answers code questions (classes, functions,
+  languages, imports, graph, architecture, entry points, complexity, components,
+  overview) with structured `{answer, evidence, confidence}` responses. Also
+  supports free-text keyword search (e.g. "Where is authentication implemented?").
+- **MCP tools**: `code_intelligence` (returns full code analysis) and
+  `code_query` (answers code questions). 44 tools total.
+- **Cognitive Twin integration**: `code_summary` cognitive dimension added to
+  `CognitiveTwinService._generate_cognition()`. Code questions route through
+  `CodeIntelligenceService.code_query()`. All 8 dimensions: purpose, domain,
+  architecture, maturity, key_components, risks, recommendations, code_summary.
+- **Service registration**: CodeIntelligenceService registered in `mcp_server.py`
+  after CognitiveTwinService, before MCPToolService.
+- **GUI integration**: Code Intelligence Twin section in `twin.html` with
+  language cards, architecture layers, important files, code graph, query box,
+  and 8 quick-question buttons (Overview, Classes, Functions, Languages,
+  Architecture, Dependencies, Entry Points, Complexity).
+- **47 new tests** (`test_code_intelligence.py`): coverage for language
+  detection (3), class/function/import detection (4), code graph (2),
+  architecture detection (1), full analysis (3), code query (11), query
+  structure (2), cache (2), MCP registration (4), GUI response (3),
+  Cognitive Twin integration (2).
+- **Zero regressions**: all 473 existing tests continue to pass. 520 total.
+- No frozen files modified.
+
+## Phase 7 — Cognitive Twin — 2026-07-28
+
+Cognitive Twin transforms the Project Twin from a discovery-only artifact into
+a queryable, reasoning twin that answers questions about project architecture,
+purpose, domain, maturity, components, risks, and recommendations.
+
+- **CognitiveTwinService** (`services/cognitive_twin_service.py`): Adds 7
+  cognitive knowledge dimensions — purpose, domain, architecture, maturity,
+  key_components, risks, recommendations. All reasoning is deterministic over
+  existing twin evidence. No external LLM calls.
+- **`ask()` interface**: Answers natural-language questions (explain, purpose,
+  domain, architecture, maturity, components, risks, recommendations, tech
+  stack, scale) with structured `{answer, evidence, confidence}` responses.
+- **MCP tool `cognitive_twin_query`**: Accepts `project_path` and `question`,
+  loads the twin, and returns the cognitive answer. 42 tools total.
+- **Service registration**: CognitiveTwinService registered in `mcp_server.py`
+  after ProjectTwinDiscoveryService, before MCPToolService.
+- **GUI integration**: Cognitive Twin section added to `twin.html` with text
+  input, quick-question buttons (Overview, Purpose, Domain, Architecture,
+  Maturity, Risks, Recommend, Tech Stack), and answer/evidence display.
+- **42 new tests** (`test_cognitive_twin_service.py`): coverage for all 7
+  cognitive dimensions, question routing, maturity classification, risk
+  detection, recommendation generation, GUI response structure, MCP tool
+  registration, and edge cases (empty twin, unknown questions).
+- **Zero regressions**: all 431 existing tests continue to pass.
+- No frozen files modified.
+
 ## Project Twin Discovery Connector — 2026-07-26
 
 First v3.1 connector expansion: extends the frozen v3.0.0 platform with

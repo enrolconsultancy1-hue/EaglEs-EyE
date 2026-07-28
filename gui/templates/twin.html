@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mission Control — AI Twin Explorer</title>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mission Control — Project Twin</title>
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -10,6 +10,7 @@
   <a href="/">Dashboard</a>
   <a href="/timeline.html">Timeline</a>
   <a href="/twin.html" class="active">AI Twin</a>
+  <a href="/evolution.html">Evolution</a>
   <a href="/search.html">Search</a>
   <a href="/search_semantic.html">Semantic</a>
   <a href="/graph.html">Graph</a>
@@ -19,27 +20,500 @@
   <a href="/help.html">Help</a>
 </nav>
 <main>
-  <h1>AI Twin Explorer</h1>
-  <p class="scope-note">Review recorded Twin artifacts: timeline, events, and summary from observed sessions.</p>
-  <div class="cards">
-    <div class="card"><h3>Timeline Artifact</h3><div class="card-body" id="twin-timeline">Load from recorded session data via GetRecentEvents or SessionReconstructionService.</div></div>
-    <div class="card"><h3>Events Log</h3><div class="card-body" id="twin-events">Event replay available through ReplayService for bounded sessions.</div></div>
-    <div class="card"><h3>Session Summary</h3><div class="card-body" id="twin-summary">Summary artifacts (timeline.json, events.json, summary.json) stored in configured Twin directory.</div></div>
-    <div class="card"><h3>Decisions</h3><div class="card-body" id="twin-decisions">Loading...</div></div>
+  <h1>Project Twin Discovery</h1>
+  <p class="scope-note">Connect any project — EaglEs EyE produces a clean architect-level briefing.</p>
+  <div class="connect-panel">
+    <input type="text" id="project-path" placeholder="Enter project path..." style="width:70%;padding:8px;font-size:14px;border:1px solid #ccc;border-radius:4px;">
+    <button id="discover-btn" onclick="discoverProject()" style="padding:8px 20px;font-size:14px;background:#1a73e8;color:#fff;border:none;border-radius:4px;cursor:pointer;">Discover</button>
+  </div>
+
+  <div id="error-bar" style="display:none;margin-top:12px;padding:10px;background:#ffebee;border:1px solid #ef9a9a;border-radius:4px;color:#c62828;"></div>
+
+  <div id="workflow" style="display:none;margin-top:20px;">
+    <h2>Workflow</h2>
+    <ul class="workflow-list" id="workflow-list"></ul>
+    <div id="mcp-log-area" style="margin-top:8px;"></div>
+  </div>
+
+  <div id="twin-result" style="display:none;margin-top:20px;">
+    <!-- Architect Summary (full-width) -->
+    <div class="card summary-card" id="architect-summary-card">
+      <h3>Architect Summary</h3>
+      <div class="card-body" id="twin-summary">-</div>
+    </div>
+
+    <div class="cards">
+      <div class="card"><h3>Project Identity</h3><div class="card-body" id="twin-identity">-</div></div>
+      <div class="card"><h3>Tech Stack</h3><div class="card-body" id="twin-techstack">-</div></div>
+      <div class="card"><h3>Knowledge Map</h3><div class="card-body" id="twin-knowledge">-</div></div>
+      <div class="card"><h3>Project Purpose</h3><div class="card-body" id="twin-purpose">-</div></div>
+    </div>
+
+    <div class="card" style="margin-top:10px;"><h3>Full Twin Data</h3><pre class="card-body" id="twin-raw" style="max-height:400px;overflow:auto;background:#f5f5f5;padding:10px;font-size:12px;"></pre></div>
+
+    <!-- Cognitive Twin Section -->
+    <div class="card" style="margin-top:12px;">
+      <h3>Cognitive Twin</h3>
+      <div class="card-body">
+        <p class="scope-note">Ask questions about the project. All answers are generated deterministically from twin evidence.</p>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <input type="text" id="cognitive-question" placeholder="Ask about this project..." style="flex:1;padding:8px;font-size:14px;border:1px solid #ccc;border-radius:4px;">
+          <button onclick="askCognitive()" style="padding:8px 20px;font-size:14px;background:#34a853;color:#fff;border:none;border-radius:4px;cursor:pointer;">Ask</button>
+        </div>
+        <div id="cognitive-error" style="display:none;margin-top:8px;padding:8px;background:#ffebee;border-radius:4px;color:#c62828;font-size:13px;"></div>
+        <div id="cognitive-answer" style="display:none;margin-top:10px;padding:10px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;">
+          <div id="cognitive-answer-text" style="white-space:pre-wrap;font-size:14px;line-height:1.5;"></div>
+          <div id="cognitive-confidence" style="margin-top:6px;font-size:12px;color:#666;"></div>
+          <div id="cognitive-evidence" style="margin-top:6px;font-size:11px;color:#888;"></div>
+        </div>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
+          <button class="quick-btn" onclick="quickAsk('Explain this project')" style="padding:4px 10px;font-size:12px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:12px;cursor:pointer;">Overview</button>
+          <button class="quick-btn" onclick="quickAsk('What is the purpose')" style="padding:4px 10px;font-size:12px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:12px;cursor:pointer;">Purpose</button>
+          <button class="quick-btn" onclick="quickAsk('What domain is this')" style="padding:4px 10px;font-size:12px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:12px;cursor:pointer;">Domain</button>
+          <button class="quick-btn" onclick="quickAsk('What architecture patterns')" style="padding:4px 10px;font-size:12px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:12px;cursor:pointer;">Architecture</button>
+          <button class="quick-btn" onclick="quickAsk('How mature is this project')" style="padding:4px 10px;font-size:12px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:12px;cursor:pointer;">Maturity</button>
+          <button class="quick-btn" onclick="quickAsk('What are the risks')" style="padding:4px 10px;font-size:12px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:12px;cursor:pointer;">Risks</button>
+          <button class="quick-btn" onclick="quickAsk('What do you recommend')" style="padding:4px 10px;font-size:12px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:12px;cursor:pointer;">Recommend</button>
+          <button class="quick-btn" onclick="quickAsk('What tech stack is used')" style="padding:4px 10px;font-size:12px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:12px;cursor:pointer;">Tech Stack</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Code Intelligence Twin Section -->
+    <div class="card" style="margin-top:12px;">
+      <h3>Code Intelligence Twin</h3>
+      <div class="card-body">
+        <p class="scope-note">Analyze source code — languages, classes, functions, imports, architecture layers, and code graph.</p>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <input type="text" id="code-query-input" placeholder="Ask about the code..." style="flex:1;padding:8px;font-size:14px;border:1px solid #ccc;border-radius:4px;">
+          <button onclick="askCodeQuery()" style="padding:8px 20px;font-size:14px;background:#7c3aed;color:#fff;border:none;border-radius:4px;cursor:pointer;">Query</button>
+        </div>
+        <div id="code-error" style="display:none;margin-top:8px;padding:8px;background:#ffebee;border-radius:4px;color:#c62828;font-size:13px;"></div>
+        <div id="code-answer" style="display:none;margin-top:10px;padding:10px;background:#f5f3ff;border:1px solid #c4b5fd;border-radius:6px;">
+          <div id="code-answer-text" style="white-space:pre-wrap;font-size:14px;line-height:1.5;"></div>
+          <div id="code-confidence" style="margin-top:6px;font-size:12px;color:#666;"></div>
+          <div id="code-evidence" style="margin-top:6px;font-size:11px;color:#888;"></div>
+        </div>
+        <div id="code-intel-display" style="display:none;margin-top:10px;">
+          <div class="cards" style="grid-template-columns:1fr 1fr;margin-top:8px;">
+            <div class="card"><h4>Languages</h4><div class="card-body" id="code-languages">-</div></div>
+            <div class="card"><h4>Architecture Layers</h4><div class="card-body" id="code-layers">-</div></div>
+            <div class="card"><h4>Important Files</h4><div class="card-body" id="code-important-files">-</div></div>
+            <div class="card"><h4>Code Graph</h4><div class="card-body" id="code-graph-info">-</div></div>
+          </div>
+        </div>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
+          <button class="quick-btn" onclick="quickCodeQuery('Overview')" style="padding:4px 10px;font-size:12px;background:#ede9fe;border:1px solid #c4b5fd;border-radius:12px;cursor:pointer;">Overview</button>
+          <button class="quick-btn" onclick="quickCodeQuery('What classes exist?')" style="padding:4px 10px;font-size:12px;background:#ede9fe;border:1px solid #c4b5fd;border-radius:12px;cursor:pointer;">Classes</button>
+          <button class="quick-btn" onclick="quickCodeQuery('What functions exist?')" style="padding:4px 10px;font-size:12px;background:#ede9fe;border:1px solid #c4b5fd;border-radius:12px;cursor:pointer;">Functions</button>
+          <button class="quick-btn" onclick="quickCodeQuery('What languages are used?')" style="padding:4px 10px;font-size:12px;background:#ede9fe;border:1px solid #c4b5fd;border-radius:12px;cursor:pointer;">Languages</button>
+          <button class="quick-btn" onclick="quickCodeQuery('Show architecture layers')" style="padding:4px 10px;font-size:12px;background:#ede9fe;border:1px solid #c4b5fd;border-radius:12px;cursor:pointer;">Architecture</button>
+          <button class="quick-btn" onclick="quickCodeQuery('Show dependency flow')" style="padding:4px 10px;font-size:12px;background:#ede9fe;border:1px solid #c4b5fd;border-radius:12px;cursor:pointer;">Dependencies</button>
+          <button class="quick-btn" onclick="quickCodeQuery('What are the entry points?')" style="padding:4px 10px;font-size:12px;background:#ede9fe;border:1px solid #c4b5fd;border-radius:12px;cursor:pointer;">Entry Points</button>
+          <button class="quick-btn" onclick="quickCodeQuery('What is the complexity?')" style="padding:4px 10px;font-size:12px;background:#ede9fe;border:1px solid #c4b5fd;border-radius:12px;cursor:pointer;">Complexity</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;text-align:right;">
+      <button onclick="viewEvolution()" style="background:#1f6feb;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:14px;">View Evolution Timeline →</button>
+    </div>
   </div>
 </main>
 <script>
+// Timeout for MCP calls — prevents infinite "Connecting..." state
+var MCP_TIMEOUT_MS = 240000;  // 240 s
+
 async function apiCall(tool, args) {
-  const r = await fetch("/api/call", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tool:tool,arguments:args||{}})});
-  return r.json();
+  var controller = new AbortController();
+  var timer = setTimeout(function() { controller.abort(); }, MCP_TIMEOUT_MS);
+  try {
+    var r = await fetch("/api/call", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({tool:tool, arguments:args||{}}),
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    return r.json();
+  } catch (err) {
+    clearTimeout(timer);
+    if (err.name === "AbortError") {
+      throw new Error("MCP call timed out after " + (MCP_TIMEOUT_MS/1000) + " s. Check MCP server stderr at /api/mcp_logs.");
+    }
+    throw err;
+  }
 }
-async function loadTwin() {
-  const dec = await apiCall("list_decisions", {});
-  if (dec.error) { document.getElementById("twin-decisions").textContent = "No decision data available: " + dec.error; return; }
-  const records = dec.decisions || [];
-  document.getElementById("twin-decisions").textContent = records.length + " decision record(s) recorded";
+function addStep(message, status) {
+  var list = document.getElementById("workflow-list");
+  var item = document.createElement("li");
+  item.className = "workflow-step " + (status || "pending");
+  item.textContent = message;
+  list.appendChild(item);
+  item.scrollIntoView({behavior:"smooth"});
 }
-loadTwin();
+function listItems(items) {
+  if (!items || items.length === 0) return "";
+  return items.map(function(i) { return "<div class='tag'>" + i + "</div>"; }).join("");
+}
+function domainIcon(domain) {
+  var icons = {
+    "mobile_application": "📱", "web_application": "🌐",
+    "backend_service": "⚙️", "ai_system": "🧠",
+    "enterprise_platform": "🏢", "general_application": "📦",
+  };
+  return icons[domain] || "📁";
+}
+function confidenceBar(level) {
+  var bars = { "high": 3, "medium": 2, "low": 1 };
+  var n = bars[level] || 0;
+  var html = "<span class='conf-bar'>";
+  for (var i = 0; i < 3; i++) html += "<span class='conf-seg" + (i < n ? " conf-on" : "") + "'></span>";
+  html += "</span>";
+  return html;
+}
+function escapeHtml(text) {
+  var d = document.createElement("div");
+  d.textContent = text;
+  return d.innerHTML;
+}
+function isGeneratedPath(path) {
+  return /(^|\/)(build|\.dart_tool|node_modules|cache|dist|coverage|__pycache__|\.git|\.github)\//.test(path);
+}
+
+/** Pop up MCP stderr logs in an overlay for debugging. */
+async function showMcpLogs() {
+  try {
+    var r = await fetch("/api/mcp_logs");
+    var data = await r.json();
+    var logBlock = document.getElementById("mcp-log-block");
+    if (!logBlock) {
+      logBlock = document.createElement("pre");
+      logBlock.id = "mcp-log-block";
+      logBlock.style.cssText = "background:#1e1e1e;color:#0f0;padding:12px;max-height:300px;overflow:auto;font-size:11px;border:1px solid #666;margin-top:8px;";
+      var container = document.getElementById("mcp-log-area");
+      if (container) container.appendChild(logBlock);
+    }
+    logBlock.textContent = data.logs || "(empty)";
+  } catch (e) {
+    alert("Failed to fetch MCP logs: " + e.message);
+  }
+}
+
+async function discoverProject() {
+  var path = document.getElementById("project-path").value.trim();
+  if (!path) { alert("Enter a project path"); return; }
+
+  var btn = document.getElementById("discover-btn");
+  btn.disabled = true;
+
+  var workflow = document.getElementById("workflow");
+  var resultDiv = document.getElementById("twin-result");
+  workflow.style.display = "block";
+  resultDiv.style.display = "none";
+  document.getElementById("workflow-list").innerHTML = "";
+  var errorBar = document.getElementById("error-bar");
+  if (errorBar) errorBar.style.display = "none";
+
+  addStep("Connecting...", "pending");
+
+  var result;
+  try {
+    result = await apiCall("discover_project_twin", {project_path: path});
+  } catch (err) {
+    addStep("ERROR: " + err.message, "error");
+    showRetryButton();
+    btn.disabled = false;
+    return;
+  }
+
+  if (result && result.error) {
+    addStep("ERROR: " + result.error, "error");
+    showRetryButton();
+    btn.disabled = false;
+    return;
+  }
+
+  var svcResult = result.discovery ? result.discovery : result;
+  var connResult = svcResult.discovery || svcResult;
+
+  var notifs = svcResult.notifications || (result.notifications || []);
+  notifs.forEach(function(n) { addStep(n.message, "done"); });
+  addStep("KNOWLEDGE INDEXED", "done");
+  addStep("PROJECT TWIN CREATED", "done");
+
+  var proj = connResult.project || {};
+  var docs = connResult.documentation || {};
+  var docCats = connResult.documentation_categories || {};
+  var cluesData = connResult.purpose_clues || {};
+  var classification = proj.classification || {};
+  var fwTiers = proj.framework_tiers || {};
+  var architectSummary = connResult.architect_summary || "";
+
+  // --- Architect Summary ---
+  document.getElementById("twin-summary").textContent = architectSummary || "No summary available.";
+
+  // --- Project Identity ---
+  var identityHtml = "";
+  identityHtml += "<div class='identity-header'><span class='domain-icon'>" + domainIcon(classification.domain) + "</span>";
+  identityHtml += "<span class='identity-name'><strong>" + escapeHtml(svcResult.project_name || proj.name || "?") + "</strong></span></div>";
+  identityHtml += "<div class='identity-type'>" + escapeHtml(proj.type || "?") + "</div>";
+  if (classification.domain) {
+    var domainLabel = classification.domain.replace(/_/g, " ");
+    identityHtml += "<div class='identity-domain'><strong>Domain:</strong> " + domainLabel + "</div>";
+    if (classification.confidence) {
+      identityHtml += "<div class='identity-confidence'><strong>Confidence:</strong> " + confidenceBar(classification.confidence) +
+        " <span class='badge badge-" + classification.confidence + "'>" + classification.confidence + "</span></div>";
+    }
+  }
+  var evidence = classification.evidence || [];
+  if (evidence.length > 0) {
+    identityHtml += "<div class='identity-evidence'><strong>Evidence:</strong> ";
+    identityHtml += evidence.map(function(e) {
+      return "<span class='evidence-tag'>" + e.source + ": " + e.signal + "</span>";
+    }).join(" ");
+    identityHtml += "</div>";
+  }
+  document.getElementById("twin-identity").innerHTML = identityHtml;
+
+  // --- Tech Stack ---
+  var stackHtml = "";
+  if (fwTiers.primary && fwTiers.primary.length > 0) {
+    stackHtml += "<strong>Primary technologies</strong><br>" + listItems(fwTiers.primary) + "<br>";
+  }
+  if (fwTiers.secondary && fwTiers.secondary.length > 0) {
+    stackHtml += "<br><strong>Supporting technologies</strong><br>" + listItems(fwTiers.secondary) + "<br>";
+  }
+  if (fwTiers.infrastructure && fwTiers.infrastructure.length > 0) {
+    stackHtml += "<br><strong>Infrastructure tools</strong><br>" + listItems(fwTiers.infrastructure);
+  }
+  document.getElementById("twin-techstack").innerHTML = stackHtml ||
+    (proj.frameworks || []).join(", ") || "-";
+
+  // --- Knowledge Map ---
+  var knowledgeHtml = "";
+  var archDocs = (docCats.architecture || []).filter(function(d) { return !isGeneratedPath(d.path); });
+  knowledgeHtml += "<strong>Architecture docs</strong> <span class='doc-count'>(" + archDocs.length + ")</span><br>";
+  knowledgeHtml += archDocs.length > 0
+    ? archDocs.map(function(d) { return "<div class='doc-entry'>" + escapeHtml(d.path) + "</div>"; }).join("")
+    : "<div class='doc-entry dim'>None</div>";
+
+  var prodDocs = (docCats.product || []).filter(function(d) { return !isGeneratedPath(d.path); });
+  knowledgeHtml += "<br><strong>Product docs</strong> <span class='doc-count'>(" + prodDocs.length + ")</span><br>";
+  knowledgeHtml += prodDocs.length > 0
+    ? prodDocs.map(function(d) { return "<div class='doc-entry'>" + escapeHtml(d.path) + "</div>"; }).join("")
+    : "<div class='doc-entry dim'>None</div>";
+
+  var bldDocs = (docCats.build || []).filter(function(d) { return !isGeneratedPath(d.path); });
+  knowledgeHtml += "<br><strong>Build docs</strong> <span class='doc-count'>(" + bldDocs.length + ")</span><br>";
+  knowledgeHtml += bldDocs.length > 0
+    ? bldDocs.map(function(d) { return "<div class='doc-entry'>" + escapeHtml(d.path) + "</div>"; }).join("")
+    : "<div class='doc-entry dim'>None</div>";
+
+  var configFiles = connResult.config_files || {};
+  var allConfigs = configFiles.files || [];
+  var importantConfigs = allConfigs.filter(function(f) { return !isGeneratedPath(f.path); });
+  knowledgeHtml += "<br><strong>Configuration</strong> <span class='doc-count'>(" + importantConfigs.length + ")</span>";
+  if (importantConfigs.length > 0) {
+    knowledgeHtml += "<br>" + importantConfigs.map(function(f) {
+      return "<span class='config-tag'>" + escapeHtml(f.path) + "</span>";
+    }).join(" ");
+  }
+  document.getElementById("twin-knowledge").innerHTML = knowledgeHtml;
+
+  // --- Project Purpose ---
+  var purposeText = cluesData.summary || "";
+  if (purposeText) {
+    purposeText = purposeText.replace(/^(this is |the |a )/i, "").trim();
+    if (purposeText.length > 200) purposeText = purposeText.slice(0, 200) + "...";
+  }
+  document.getElementById("twin-purpose").textContent = purposeText || "-";
+
+  document.getElementById("twin-raw").textContent = JSON.stringify(connResult, null, 2);
+  resultDiv.style.display = "block";
+  btn.disabled = false;
+}
+
+function showRetryButton() {
+  var list = document.getElementById("workflow-list");
+  var item = document.createElement("li");
+  item.className = "workflow-step error";
+  item.innerHTML = '<button onclick="discoverProject()" style="background:#d32f2f;color:#fff;border:none;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:13px;">Retry Discover</button> ' +
+    '<button onclick="showMcpLogs()" style="background:#555;color:#fff;border:none;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:13px;">View MCP Logs</button>';
+  list.appendChild(item);
+}
+function viewEvolution() {
+  var path = document.getElementById("project-path").value.trim();
+  if (!path) return;
+  window.location.href = "/evolution.html?project_path=" + encodeURIComponent(path);
+}
+
+// --- Cognitive Twin ---
+async function askCognitive() {
+  var question = document.getElementById("cognitive-question").value.trim();
+  if (!question) return;
+  await performAsk(question);
+}
+
+async function quickAsk(question) {
+  document.getElementById("cognitive-question").value = question;
+  await performAsk(question);
+}
+
+async function performAsk(question) {
+  var path = document.getElementById("project-path").value.trim();
+  if (!path) { alert("Discover a project first."); return; }
+
+  var errDiv = document.getElementById("cognitive-error");
+  var ansDiv = document.getElementById("cognitive-answer");
+  errDiv.style.display = "none";
+  ansDiv.style.display = "none";
+
+  try {
+    var result = await apiCall("cognitive_twin_query", {project_path: path, question: question});
+  } catch (err) {
+    errDiv.textContent = "Error: " + err.message;
+    errDiv.style.display = "block";
+    return;
+  }
+
+  if (result && result.error) {
+    errDiv.textContent = "Error: " + result.error;
+    errDiv.style.display = "block";
+    return;
+  }
+
+  var answerData = result.answer || {};
+  var answerText = answerData.answer || "(no answer)";
+  var confidence = answerData.confidence || "none";
+  var evidence = answerData.evidence || [];
+
+  document.getElementById("cognitive-answer-text").textContent = answerText;
+  document.getElementById("cognitive-confidence").textContent = "Confidence: " + confidence;
+
+  if (evidence.length > 0) {
+    var evHtml = "<strong>Evidence (" + evidence.length + "):</strong><br>";
+    evidence.forEach(function(e) {
+      evHtml += "<span style='display:inline-block;background:#e0e7ff;padding:2px 6px;margin:2px;border-radius:3px;'>" +
+        e.source + ": " + e.detail + "</span> ";
+    });
+    document.getElementById("cognitive-evidence").innerHTML = evHtml;
+  } else {
+    document.getElementById("cognitive-evidence").textContent = "";
+  }
+
+  ansDiv.style.display = "block";
+}
+
+// --- Code Intelligence Twin ---
+async function askCodeQuery() {
+  var question = document.getElementById("code-query-input").value.trim();
+  if (!question) return;
+  await performCodeQuery(question);
+}
+
+async function quickCodeQuery(question) {
+  document.getElementById("code-query-input").value = question;
+  await performCodeQuery(question);
+}
+
+async function performCodeQuery(question) {
+  var path = document.getElementById("project-path").value.trim();
+  if (!path) { alert("Discover a project first."); return; }
+
+  var errDiv = document.getElementById("code-error");
+  var ansDiv = document.getElementById("code-answer");
+  var intelDiv = document.getElementById("code-intel-display");
+  errDiv.style.display = "none";
+  ansDiv.style.display = "none";
+  intelDiv.style.display = "none";
+
+  try {
+    var result = await apiCall("code_query", {project_path: path, question: question});
+  } catch (err) {
+    errDiv.textContent = "Error: " + err.message;
+    errDiv.style.display = "block";
+    return;
+  }
+
+  if (result && result.error) {
+    errDiv.textContent = "Error: " + result.error;
+    errDiv.style.display = "block";
+    return;
+  }
+
+  var answerData = result.answer || {};
+  var answerText = answerData.answer || "(no answer)";
+  var confidence = answerData.confidence || "none";
+  var evidence = answerData.evidence || [];
+
+  document.getElementById("code-answer-text").textContent = answerText;
+  document.getElementById("code-confidence").textContent = "Confidence: " + confidence;
+
+  if (evidence.length > 0) {
+    var evHtml = "<strong>Evidence (" + evidence.length + "):</strong><br>";
+    evidence.forEach(function(e) {
+      evHtml += "<span style='display:inline-block;background:#ede9fe;padding:2px 6px;margin:2px;border-radius:3px;'>" +
+        e.source + ": " + e.detail + "</span> ";
+    });
+    document.getElementById("code-evidence").innerHTML = evHtml;
+  } else {
+    document.getElementById("code-evidence").textContent = "";
+  }
+
+  ansDiv.style.display = "block";
+
+  // Also fetch full analysis for the info cards
+  if (question.toLowerCase().indexOf("overview") >= 0) {
+    await loadCodeIntelCards(path);
+  }
+}
+
+async function loadCodeIntelCards(projectPath) {
+  try {
+    var result = await apiCall("code_intelligence", {project_path: projectPath});
+  } catch (e) { return; }
+  if (result && result.error) { return; }
+
+  var data = result.code_intelligence || {};
+  if (data.error) { return; }
+
+  // Languages
+  var langs = data.languages || [];
+  var langHtml = langs.length > 0
+    ? langs.map(function(l) { return "<div class='tag'>" + l.name + " (" + l.files + " files, " + l.percentage + "%)</div>"; }).join("")
+    : "None detected";
+  document.getElementById("code-languages").innerHTML = langHtml;
+
+  // Architecture Layers
+  var layers = data.architecture_layers || [];
+  var layerHtml = layers.length > 0
+    ? layers.map(function(l) { return "<div><strong>" + l.layer + "</strong> (" + l.count + " files)</div>"; }).join("")
+    : "None detected";
+  document.getElementById("code-layers").innerHTML = layerHtml;
+
+  // Important Files
+  var impFiles = data.important_files || [];
+  var impHtml = impFiles.length > 0
+    ? impFiles.map(function(f) {
+        var clsInfo = (f.classes && f.classes.length > 0) ? " — " + f.classes.join(", ") : "";
+        return "<div class='doc-entry'>" + escapeHtml(f.path) + clsInfo + " (score: " + f.score + ")</div>";
+      }).join("")
+    : "None identified";
+  document.getElementById("code-important-files").innerHTML = impHtml;
+
+  // Code Graph
+  var graph = data.code_graph || {};
+  var nodes = graph.nodes || [];
+  var edges = graph.edges || [];
+  var graphHtml = "<div>Nodes: " + nodes.length + " (classes: " +
+    nodes.filter(function(n) { return n.type === "class"; }).length +
+    ", modules: " + nodes.filter(function(n) { return n.type === "module"; }).length + ")</div>";
+  graphHtml += "<div>Edges: " + edges.length + "</div>";
+  document.getElementById("code-graph-info").innerHTML = graphHtml;
+
+  document.getElementById("code-intel-display").style.display = "block";
+}
 </script>
 </body>
 </html>

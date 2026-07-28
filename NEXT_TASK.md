@@ -5,9 +5,9 @@ architectural baseline.** The AI Twin Core is frozen.
 
 ## Current State
 
-- **Version:** v3.1-dev (Project Twin Discovery Connector)
-- **Tests:** 431 passing (403 existing + 28 new), zero regressions
-- **MCP Tools:** 41 (40 existing + discover_project_twin)
+- **Version:** v3.2-dev (Code Intelligence Twin)
+- **Tests:** 520 passing (473 existing + 47 new), zero regressions
+- **MCP Tools:** 44 (42 existing + code_intelligence + code_query)
 - **Architecture:** Frozen per [ARCHITECTURAL_BASELINE_v3.0.0.md](ARCHITECTURAL_BASELINE_v3.0.0.md)
 
 ## What's Next

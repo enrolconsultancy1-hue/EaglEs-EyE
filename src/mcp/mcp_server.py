@@ -45,6 +45,8 @@ from services.twin_integrity_validator import TwinIntegrityValidator
 from services.unified_project_twin import UnifiedProjectTwin
 from services.universal_twin_report import UniversalTwinReport
 from services.project_twin_discovery_service import ProjectTwinDiscoveryService
+from services.cognitive_twin_service import CognitiveTwinService
+from services.code_intelligence_service import CodeIntelligenceService
 
 
 SUPPORTED_PROTOCOL_VERSION = "2025-03-26"
@@ -154,6 +156,8 @@ def build_mcp_kernel(memory_path=None):
     unified_twin = UnifiedProjectTwin(kernel)
     twin_report = UniversalTwinReport(kernel)
     project_twin = ProjectTwinDiscoveryService(kernel)
+    cognitive_twin = CognitiveTwinService(kernel)
+    code_intel = CodeIntelligenceService(kernel)
     mcp_tool = MCPToolService(kernel)
     services = (store, sym_idx, kg, indexer, retrieval, ctx, xref, arch, docs,
                 ws, timeline, sessions, causal, evolution, decisions, cognitive,
@@ -162,7 +166,7 @@ def build_mcp_kernel(memory_path=None):
                 confidence_engine, reasoning_engine, project_intelligence,
                 root_cause, impact, decision_lineage, explainable,
                 ai_twin, twin_validator, unified_twin, twin_report,
-                project_twin,
+                project_twin, cognitive_twin, code_intel,
                 mcp_tool)
     for s in services:
         kernel.register_service(s)
